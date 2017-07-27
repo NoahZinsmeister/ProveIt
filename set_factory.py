@@ -33,7 +33,7 @@ typed_set = lambda x: """
             self.memberExists[other] = false;
             uint index = self.memberIndex[other];
             // change index of last value to index of other 
-            self.memberIndex[self.members[index]] = index;
+            self.memberIndex[self.members[self.members.length - 1]] = index;
             // copy last value over other and decrement length
             self.members[index] = self.members[self.members.length - 1];
             self.members.length--;
