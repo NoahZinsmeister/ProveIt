@@ -1,45 +1,42 @@
-# quicky to generate Sets of arbitrary type
+# generate library of Sets for selected solidity value-types
 
-solidity_types = ("bytes32", "address")
+standalones = ["address"]
+uint = ["uint", "uint8"]
+_int =  ["int", "int8"]
+_bytes = ["byte", "bytes32"]
+
+solidity_types = standalones + uint + _int + _bytes
 
 pre = """pragma solidity ^0.4.13;
 
-library Sets {
-"""
-typed_set = lambda x: """    // {0} set
+// note: breaks if members.length exceeds 2^256-1 (so, not really a problem)
+library Sets {"""
+
+typed_set = lambda x: """
+    // {0} set
     struct {0}Set {{
         {0}[] members;
         mapping ({0} => bool) memberExists;
-        mapping ({0} => uint256) memberIndex;
+        mapping ({0} => uint) memberIndex;
     }}
 
     function insert({0}Set storage self, {0} other) {{
-        // only do anything if entry doesn't exist
         if (!self.memberExists[other]) {{
-            // ensure that pushing won't overflow uint256
-            assert(self.members.length + 1 > self.members.length);
-            self.members.push(other);
-            // update mappings
-            self.memberIndex[other] = self.members.length - 1;
             self.memberExists[other] = true;
+            self.memberIndex[other] = self.members.length;
+            self.members.push(other);
         }}
     }}
 
     function remove({0}Set storage self, {0} other) {{
-        // only do anything if entry exists
         if (self.memberExists[other])  {{
-            // if this isn't the last element
-            if (self.members.length > 1) {{
-                uint256 index = self.memberIndex[other];
-                // copy last value over value to remove
-                self.members[index] = self.members[self.members.length - 1];
-                // update the index of the newly copied value
-                self.memberIndex[self.members[index]] = index;
-            }}
-            // decrement length
-            self.members.length -= 1;
-            // update mapping (don't need to change index, exists catches all)
             self.memberExists[other] = false;
+            uint index = self.memberIndex[other];
+            // change index of last value to index of other 
+            self.memberIndex[self.members[index]] = index;
+            // copy last value over other and decrement length
+            self.members[index] = self.members[self.members.length - 1];
+            self.members.length--;
         }}
     }}
 
@@ -49,35 +46,10 @@ typed_set = lambda x: """    // {0} set
 
     function length({0}Set storage self) returns (uint256) {{
         return self.members.length;
-    }}""".format(x)
-body = "\n\n\n".join(typed_set(t) for t in solidity_types)
-post = """
-}
-
-contract LibrarySelfDestruct {
-    // storage vars
-    address owner;
-
-    // constructor
-    function LibrarySelfDestruct() {
-        owner = msg.sender;
-    }
-    
-    // fallback: unmatched transactions will be returned
-    function () {
-        revert();
-    }
-
-    // allow owner to delete contract 
-    function selfDestruct() {
-        if (msg.sender == owner) {
-            selfdestruct(owner);
-        }
-    }
-}
-
-"""
+    }}
+""".format(x)
+body = "\n".join(typed_set(t) for t in solidity_types)
+post = """}"""
 
 with open("sets.sol", "w") as file:
     file.write("".join([pre, body, post]))
-
