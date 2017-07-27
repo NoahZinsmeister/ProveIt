@@ -1,6 +1,5 @@
 pragma solidity ^0.4.13;
 
-// should I implement SetsLight with only memberExists and length?
 library Sets {
     // bytes32 set
     struct bytes32Set {
@@ -93,3 +92,26 @@ library Sets {
         return self.members.length;
     }
 }
+
+contract LibrarySelfDestruct {
+    // storage vars
+    address owner;
+
+    // constructor
+    function LibrarySelfDestruct() {
+        owner = msg.sender;
+    }
+    
+    // fallback: unmatched transactions will be returned
+    function () {
+        revert();
+    }
+
+    // allow owner to delete contract 
+    function selfDestruct() {
+        if (msg.sender == owner) {
+            selfdestruct(owner);
+        }
+    }
+}
+

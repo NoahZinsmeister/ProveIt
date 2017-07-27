@@ -4,7 +4,6 @@ solidity_types = ("bytes32", "address")
 
 pre = """pragma solidity ^0.4.13;
 
-// should I implement SetsLight with only memberExists and length?
 library Sets {
 """
 typed_set = lambda x: """    // {0} set
@@ -54,6 +53,29 @@ typed_set = lambda x: """    // {0} set
 body = "\n\n\n".join(typed_set(t) for t in solidity_types)
 post = """
 }
+
+contract LibrarySelfDestruct {
+    // storage vars
+    address owner;
+
+    // constructor
+    function LibrarySelfDestruct() {
+        owner = msg.sender;
+    }
+    
+    // fallback: unmatched transactions will be returned
+    function () {
+        revert();
+    }
+
+    // allow owner to delete contract 
+    function selfDestruct() {
+        if (msg.sender == owner) {
+            selfdestruct(owner);
+        }
+    }
+}
+
 """
 
 with open("sets.sol", "w") as file:
