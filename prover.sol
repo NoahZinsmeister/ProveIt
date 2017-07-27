@@ -1,17 +1,8 @@
-pragma solidity ^0.4.12;
+pragma solidity ^0.4.13;
 
-import "./sets.sol";
+import "sets.sol";
 
 contract Prover {
-    /* for reference, a schematic of the storage vars and structs
-    owner:  address1
-    users:  bytes32Set1
-    ledger: {address1: UserAccount1, ...}
-    UserAccount: {"hashes": hashes1, "entries": {dataHash1: Entry1, ...}}
-    Entry1 {"time": time1, "value": value1}
-    */
-
-
     // attach library
     using Sets for *;
 
@@ -143,4 +134,3 @@ contract Prover {
                 ledger[target].entries[dataHash].value);
     }
 }
-
