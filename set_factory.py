@@ -1,55 +1,53 @@
 # generate library of Sets for selected solidity value-types
 
-standalones = ["address"]
-uint = ["uint", "uint8"]
-_int =  ["int", "int8"]
-_bytes = ["byte", "bytes32"]
+standalones = ("address", )
+uint = ("uint", "uint8")
+_int =  ("int", "int8")
+_bytes = ("byte", "bytes32")
 
 solidity_types = standalones + uint + _int + _bytes
 
 pre = """pragma solidity ^0.4.13;
 
-// note: breaks if members.length exceeds 2^256-1 (so, not really a problem)
+// sets support up to 2^256-2 members
+// memberIndices stores the index of members + 1, not their actual index
 library Sets {"""
-
 typed_set = lambda x: """
     // {0} set
     struct {0}Set {{
         {0}[] members;
-        mapping ({0} => bool) memberExists;
-        mapping ({0} => uint) memberIndex;
+        mapping({0} => uint) memberIndices;
     }}
 
     function insert({0}Set storage self, {0} other) {{
-        if (!self.memberExists[other]) {{
-            self.memberExists[other] = true;
-            self.memberIndex[other] = self.members.length;
+        if (!contains(self, other)) {{
             self.members.push(other);
+            self.memberIndices[other] = self.members.length;
         }}
     }}
 
     function remove({0}Set storage self, {0} other) {{
-        if (self.memberExists[other])  {{
-            self.memberExists[other] = false;
-            uint index = self.memberIndex[other];
-            // change index of last value to index of other 
-            self.memberIndex[self.members[self.members.length - 1]] = index;
-            // copy last value over other and decrement length
-            self.members[index] = self.members[self.members.length - 1];
+        if (contains(self, other)) {{
+            uint replaceIndex = self.memberIndices[other];
+            // overwrite other with the last member, update last member index
+            self.members[replaceIndex-1] = self.members[length(self)-1];
+            self.memberIndices[self.members[replaceIndex-1]] = replaceIndex;
+            // decrement length and remove other from memberIndices
             self.members.length--;
+            delete self.memberIndices[other];
         }}
     }}
 
     function contains({0}Set storage self, {0} other) returns (bool) {{
-        return self.memberExists[other];
+        return self.memberIndices[other] > 0;
     }}
 
     function length({0}Set storage self) returns (uint256) {{
         return self.members.length;
-    }}
-""".format(x)
-body = "\n".join(typed_set(t) for t in solidity_types)
-post = """}"""
+    }}""".format(x)
+body = "\n\n".join(typed_set(t) for t in solidity_types)
+post = """
+}"""
 
 with open("sets.sol", "w") as file:
-    file.write("".join([pre, body, post]))
+    file.write("".join((pre, body, post)))
