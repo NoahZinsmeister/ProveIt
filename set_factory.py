@@ -53,5 +53,5 @@ body = "\n\n".join(typed_set(t) for t in solidity_types)
 post = """
 }"""
 
-with open("sets.sol", "w") as file:
+with open("contracts/Sets.sol", "w") as file:
     file.write("".join((pre, body, post)))
