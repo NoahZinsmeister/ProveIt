@@ -29,11 +29,12 @@ typed_set = lambda x: """
     function remove({0}Set storage self, {0} other) {{
         if (contains(self, other)) {{
             uint replaceIndex = self.memberIndices[other];
+            {0} lastMember = self.members[length(self)-1];
             // overwrite other with the last member and remove last member
-            self.members[replaceIndex-1] = self.members[length(self)-1];
+            self.members[replaceIndex-1] = lastMember;
             self.members.length--;
             // reflect this change in the indices
-            self.memberIndices[self.members[replaceIndex-1]] = replaceIndex;
+            self.memberIndices[lastMember] = replaceIndex;
             delete self.memberIndices[other];
         }}
     }}
