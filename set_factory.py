@@ -38,11 +38,14 @@ typed_set = lambda x: """
         }}
     }}
 
-    function contains({0}Set storage self, {0} other) returns (bool) {{
+    function contains({0}Set storage self, {0} other)
+        constant
+        returns (bool)
+    {{
         return self.memberIndices[other] > 0;
     }}
 
-    function length({0}Set storage self) returns (uint256) {{
+    function length({0}Set storage self) constant returns (uint256) {{
         return self.members.length;
     }}""".format(x)
 body = "\n\n".join(typed_set(t) for t in solidity_types)
