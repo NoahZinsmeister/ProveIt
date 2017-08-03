@@ -1,14 +1,19 @@
-# Prove It
-Playing around with ethereum contracts.
-
-1. sets.sol: Deployed at 0xD71d1864e5eC4c0754e38C5b0353Cf9F883f4c5a.
-[Etherscan](https://etherscan.io/address/0xd71d1864e5ec4c0754e38c5b0353cf9f883f4c5a).
-
-
-2. prover.sol. Deployed at 0x7Aef44E5e6930F8799559aFB046Ccd8692044f86.
-[Etherscan](https://etherscan.io/address/0x7aef44e5e6930f8799559afb046ccd8692044f86).
-
-If you don't trust Etherscan's verification, you can check the bytecode against
-the output of: ```solc --optimize --libraries libraries --bin-runtime *.sol```.
-Run with solc version 0.4.13+commit.0fb4cb1a.Linux.g++.
+# ProveIt
+ 
+At long last, we have the technology. You can finally _prove_ to your friends that you liked that band before they were cool! :ok_hand:
+ 
+ProveIt implements proof of historical data possession on the Ethereum blockchain. What this means in practice is that any Ethereum address can submit a text string or a 32-byte cryptographic hash of data to ProveIt's ledger and gain the ability to prove that the owner(s) of this address wrote/possessed the text/data at a particular time. The ledger also allows addresses to stake arbitrary amounts of Ether alongside their entries, lending credibility.
+ 
+Potential uses cases:
+* Individual __I__ is a rabid Elon Musk fan, and wants to make a prediction about Musk's glorious future endeavors. Using their Ethereum address __A__, __I__ could submit ```By 2030, a company founded or owned in part by Elon Musk will have delivered a human to the surface of Mars``` to the ProveIt ledger at time __T__ := 2017. At any point from now until 2030, __I__ can submit evidence of their ownership of __A__ in standard ways (i.e. by signing a credible message via something like the [Etherscan verifySig tool](https://etherscan.io/verifySig)) thereby proving that they made this statement at time __T__. This makes __I__ seem prescient, and more importantly, affirms their Musk fanhood. One could imagine, however, that a rival Musk supporter __R__ might submit many such messages, varying the year, and revealing only the one that makes them appear most credible. To combat this issue, __I__ can lock up arbitrary amount (__x__) of ether alongside their statement. This amount cannot be recovered without destroying the associated ledger entry. If we assume that __R__ must submit 20 different entries to have a high probability of ending up with at least one very close prediction, they’re forced to lock up 20*__x__ ether, dissuading them from attacking.
+* Imagine that Individual __I__ is also an amateur paparazzo/a, and manages to snap an incredibly ~~compromising~~ valuable photograph of Elon. They’re desperately worried that this photo will be stolen and published by __r__, however, depriving __I__ of all glory and potential proceeds. If __I__ wishes to prove possession of this photograph at time __T__ they can simply make a (cryptographically secure) 32-byte hash of this photograph, and store the hash in ProveIt. The data that produced this hash will of course be unknown at time __T__, but at any point in the future __I__ could release the data (photograph) and allow anyone to verify that it does indeed hash to the entry that __I__ made in ProveIt at time __T__.
+ 
+Technical notes:
+* While building ProveIt, I realized that having set functionality would be helpful, so I implemented it in contracts/Sets.sol. It's quite efficient, with O(1) insertion, removal, and existence checks.
+…
+* Sets.sol is deployed at: ```0x582a46566e22cD0E02A40ed01E108b499A346Bc4``` and is [verified on Etherscan](https://etherscan.io/address/0x582a46566e22cD0E02A40ed01E108b499A346Bc4).
+* Prover.sol is deployed at: ```0xbABA9bbb033f9b575ACf7F09A240782c17124731``` and is [verified on Etherscan](https://etherscan.io/address/0xbABA9bbb033f9b575ACf7F09A240782c17124731).
+* While using popular services like MyEtherWallet to read/write text string entries to ProveIt usually works (not always though, the returned boolean is sometimes off..), I'm having trouble submitting hashes via these services, I think because the 64-character hex strings are not being treated as 32-byte data. I'm working on a custom front-end for ProveIt that will hopefully fix some of these issues.
+…
+* I've yet to implement tests, but they're coming...of course you're free to audit the code yourself.
 
