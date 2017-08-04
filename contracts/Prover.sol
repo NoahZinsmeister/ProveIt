@@ -126,7 +126,7 @@ contract Prover {
     function status(address target, bytes32 dataHash) internal constant
         returns (bool proved, uint time, uint staked)
     {
-        return (accounts[msg.sender].entries.contains(dataHash),
+        return (accounts[target].entries.contains(dataHash),
                 accounts[target].values[dataHash].time,
                 accounts[target].values[dataHash].staked);
     }
