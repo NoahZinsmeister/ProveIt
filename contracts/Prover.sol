@@ -45,7 +45,7 @@ contract Prover {
 
     // external functions
     // allow access to our structs via functions with convenient return values
-    function registeredUsers() public constant
+    function registeredUsers() external constant
         returns (uint number_unique_addresses, address[] unique_addresses)
     {
         return (users.length(), users.members);
