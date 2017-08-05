@@ -10,7 +10,7 @@ Potential uses cases:
  
 Technical notes:
 * While building ProveIt, I realized that having set functionality would be helpful, so I implemented it in contracts/Sets.sol. It's quite efficient, with O(1) insertion, removal, and existence checks.
-* Sets.sol is deployed at: ```0x582a46566e22cD0E02A40ed01E108b499A346Bc4``` and is [verified on Etherscan](https://etherscan.io/address/0x582a46566e22cD0E02A40ed01E108b499A346Bc4).
-* Prover.sol is deployed at: ```0xbABA9bbb033f9b575ACf7F09A240782c17124731``` and is [verified on Etherscan](https://etherscan.io/address/0xbABA9bbb033f9b575ACf7F09A240782c17124731).
-* While using popular services like MyEtherWallet to read/write text string entries to ProveIt usually works (not always though, the returned boolean is sometimes off..), I'm having trouble submitting hashes via these services, I think because the 64-character hex strings are not being treated as 32-byte data. I'm working on a custom front-end for ProveIt that will hopefully fix some of these issues.
+* Sets.sol is deployed at: ```0x4e61847E3b0C5786e81C8cd477c4af76b5F7098f``` and is [verified on Etherscan](https://etherscan.io/address/0x4e61847e3b0c5786e81c8cd477c4af76b5f7098f).
+* Prover.sol is deployed at: ``0x4125c610b63dd63bE5c48D5CC3C68784F92D3B43```` and is [verified on Etherscan](https://etherscan.io/address/0x4125c610b63dd63bE5c48D5CC3C68784F92D3B43).
+* While using popular services like MyEtherWallet to read/write text string entries to ProveIt works, I'm having trouble submitting hashes via these services, I think because the 64-character hex strings are not being treated as 32-byte data. I'm working on a custom front-end for ProveIt that will hopefully fix some of these issues.
 * I've yet to implement tests, but they're coming...of course you're free to audit the code yourself.
