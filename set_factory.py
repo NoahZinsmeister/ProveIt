@@ -21,6 +21,7 @@ typed_set = lambda x: """
 
     function insert({0}Set storage self, {0} other) {{
         if (!contains(self, other)) {{
+            assert(self.length < 2**256-1);
             self.members.push(other);
             self.memberIndices[other] = length(self);
         }}
