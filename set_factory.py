@@ -7,27 +7,27 @@ _bytes = ("byte", "bytes32")
 
 solidity_types = standalones + uint + _int + _bytes
 
-pre = """pragma solidity ^0.4.13;
+pre = """pragma solidity ^0.4.18;
 
 // sets support up to 2^256-2 members
 // memberIndices stores the index of members + 1, not their actual index
 library Sets {"""
-typed_set = lambda x: """
+typed_set = """
     // {0} set
     struct {0}Set {{
         {0}[] members;
         mapping({0} => uint) memberIndices;
     }}
 
-    function insert({0}Set storage self, {0} other) {{
+    function insert({0}Set storage self, {0} other) public {{
         if (!contains(self, other)) {{
-            assert(self.length < 2**256-1);
+            assert(length(self) < 2**256-1);
             self.members.push(other);
             self.memberIndices[other] = length(self);
         }}
     }}
 
-    function remove({0}Set storage self, {0} other) {{
+    function remove({0}Set storage self, {0} other) public {{
         if (contains(self, other)) {{
             uint replaceIndex = self.memberIndices[other];
             {0} lastMember = self.members[length(self)-1];
@@ -40,16 +40,13 @@ typed_set = lambda x: """
         }}
     }}
 
-    function contains({0}Set storage self, {0} other)
-        constant
-        returns (bool)
-    {{
+    function contains({0}Set storage self, {0} other) public view returns (bool) {{
         return self.memberIndices[other] > 0;
     }}
 
-    function length({0}Set storage self) constant returns (uint) {{
+    function length({0}Set storage self) public view returns (uint) {{
         return self.members.length;
-    }}""".format(x)
+    }}""".format
 body = "\n\n".join(typed_set(t) for t in solidity_types)
 post = """
 }"""
