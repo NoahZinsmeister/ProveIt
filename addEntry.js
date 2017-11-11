@@ -8,7 +8,7 @@ var web3 = new Web3(
 
 // sending address info
 var fromAddress = secrets.config.myAddress;
-var privateKey = new Buffer(secrets.config.myPrivateKey;, "hex");
+var privateKey = new Buffer(secrets.config.myPrivateKey, "hex");
 var nonce = web3.toHex(web3.eth.getTransactionCount(fromAddress));
 var balance = web3.fromWei(web3.eth.getBalance(fromAddress).toNumber(), "ether");
 
@@ -16,7 +16,7 @@ var balance = web3.fromWei(web3.eth.getBalance(fromAddress).toNumber(), "ether")
 var toAddress = '0x1f5cDff41Fb9B17996D6F0fcA6Ab9C5bEd96F20f';
 
 // gas variables
-var gasPrice = web3.toHex(1.5*1e9);
+var gasPrice = web3.toHex(1*1e9);
 var gasLimit = web3.toHex(4712388);
 
 // value to send
