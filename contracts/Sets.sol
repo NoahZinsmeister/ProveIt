@@ -1,4 +1,4 @@
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.18;
 
 // sets support up to 2^256-2 members
 // memberIndices stores the index of members + 1, not their actual index
@@ -9,14 +9,15 @@ library Sets {
         mapping(address => uint) memberIndices;
     }
 
-    function insert(addressSet storage self, address other) {
+    function insert(addressSet storage self, address other) public {
         if (!contains(self, other)) {
+            assert(length(self) < 2**256-1);
             self.members.push(other);
             self.memberIndices[other] = length(self);
         }
     }
 
-    function remove(addressSet storage self, address other) {
+    function remove(addressSet storage self, address other) public {
         if (contains(self, other)) {
             uint replaceIndex = self.memberIndices[other];
             address lastMember = self.members[length(self)-1];
@@ -29,14 +30,11 @@ library Sets {
         }
     }
 
-    function contains(addressSet storage self, address other)
-        constant
-        returns (bool)
-    {
+    function contains(addressSet storage self, address other) public view returns (bool) {
         return self.memberIndices[other] > 0;
     }
 
-    function length(addressSet storage self) constant returns (uint) {
+    function length(addressSet storage self) public view returns (uint) {
         return self.members.length;
     }
 
@@ -47,14 +45,15 @@ library Sets {
         mapping(uint => uint) memberIndices;
     }
 
-    function insert(uintSet storage self, uint other) {
+    function insert(uintSet storage self, uint other) public {
         if (!contains(self, other)) {
+            assert(length(self) < 2**256-1);
             self.members.push(other);
             self.memberIndices[other] = length(self);
         }
     }
 
-    function remove(uintSet storage self, uint other) {
+    function remove(uintSet storage self, uint other) public {
         if (contains(self, other)) {
             uint replaceIndex = self.memberIndices[other];
             uint lastMember = self.members[length(self)-1];
@@ -67,14 +66,11 @@ library Sets {
         }
     }
 
-    function contains(uintSet storage self, uint other)
-        constant
-        returns (bool)
-    {
+    function contains(uintSet storage self, uint other) public view returns (bool) {
         return self.memberIndices[other] > 0;
     }
 
-    function length(uintSet storage self) constant returns (uint) {
+    function length(uintSet storage self) public view returns (uint) {
         return self.members.length;
     }
 
@@ -85,14 +81,15 @@ library Sets {
         mapping(uint8 => uint) memberIndices;
     }
 
-    function insert(uint8Set storage self, uint8 other) {
+    function insert(uint8Set storage self, uint8 other) public {
         if (!contains(self, other)) {
+            assert(length(self) < 2**256-1);
             self.members.push(other);
             self.memberIndices[other] = length(self);
         }
     }
 
-    function remove(uint8Set storage self, uint8 other) {
+    function remove(uint8Set storage self, uint8 other) public {
         if (contains(self, other)) {
             uint replaceIndex = self.memberIndices[other];
             uint8 lastMember = self.members[length(self)-1];
@@ -105,14 +102,11 @@ library Sets {
         }
     }
 
-    function contains(uint8Set storage self, uint8 other)
-        constant
-        returns (bool)
-    {
+    function contains(uint8Set storage self, uint8 other) public view returns (bool) {
         return self.memberIndices[other] > 0;
     }
 
-    function length(uint8Set storage self) constant returns (uint) {
+    function length(uint8Set storage self) public view returns (uint) {
         return self.members.length;
     }
 
@@ -123,14 +117,15 @@ library Sets {
         mapping(int => uint) memberIndices;
     }
 
-    function insert(intSet storage self, int other) {
+    function insert(intSet storage self, int other) public {
         if (!contains(self, other)) {
+            assert(length(self) < 2**256-1);
             self.members.push(other);
             self.memberIndices[other] = length(self);
         }
     }
 
-    function remove(intSet storage self, int other) {
+    function remove(intSet storage self, int other) public {
         if (contains(self, other)) {
             uint replaceIndex = self.memberIndices[other];
             int lastMember = self.members[length(self)-1];
@@ -143,14 +138,11 @@ library Sets {
         }
     }
 
-    function contains(intSet storage self, int other)
-        constant
-        returns (bool)
-    {
+    function contains(intSet storage self, int other) public view returns (bool) {
         return self.memberIndices[other] > 0;
     }
 
-    function length(intSet storage self) constant returns (uint) {
+    function length(intSet storage self) public view returns (uint) {
         return self.members.length;
     }
 
@@ -161,14 +153,15 @@ library Sets {
         mapping(int8 => uint) memberIndices;
     }
 
-    function insert(int8Set storage self, int8 other) {
+    function insert(int8Set storage self, int8 other) public {
         if (!contains(self, other)) {
+            assert(length(self) < 2**256-1);
             self.members.push(other);
             self.memberIndices[other] = length(self);
         }
     }
 
-    function remove(int8Set storage self, int8 other) {
+    function remove(int8Set storage self, int8 other) public {
         if (contains(self, other)) {
             uint replaceIndex = self.memberIndices[other];
             int8 lastMember = self.members[length(self)-1];
@@ -181,14 +174,11 @@ library Sets {
         }
     }
 
-    function contains(int8Set storage self, int8 other)
-        constant
-        returns (bool)
-    {
+    function contains(int8Set storage self, int8 other) public view returns (bool) {
         return self.memberIndices[other] > 0;
     }
 
-    function length(int8Set storage self) constant returns (uint) {
+    function length(int8Set storage self) public view returns (uint) {
         return self.members.length;
     }
 
@@ -199,14 +189,15 @@ library Sets {
         mapping(byte => uint) memberIndices;
     }
 
-    function insert(byteSet storage self, byte other) {
+    function insert(byteSet storage self, byte other) public {
         if (!contains(self, other)) {
+            assert(length(self) < 2**256-1);
             self.members.push(other);
             self.memberIndices[other] = length(self);
         }
     }
 
-    function remove(byteSet storage self, byte other) {
+    function remove(byteSet storage self, byte other) public {
         if (contains(self, other)) {
             uint replaceIndex = self.memberIndices[other];
             byte lastMember = self.members[length(self)-1];
@@ -219,14 +210,11 @@ library Sets {
         }
     }
 
-    function contains(byteSet storage self, byte other)
-        constant
-        returns (bool)
-    {
+    function contains(byteSet storage self, byte other) public view returns (bool) {
         return self.memberIndices[other] > 0;
     }
 
-    function length(byteSet storage self) constant returns (uint) {
+    function length(byteSet storage self) public view returns (uint) {
         return self.members.length;
     }
 
@@ -237,14 +225,15 @@ library Sets {
         mapping(bytes32 => uint) memberIndices;
     }
 
-    function insert(bytes32Set storage self, bytes32 other) {
+    function insert(bytes32Set storage self, bytes32 other) public {
         if (!contains(self, other)) {
+            assert(length(self) < 2**256-1);
             self.members.push(other);
             self.memberIndices[other] = length(self);
         }
     }
 
-    function remove(bytes32Set storage self, bytes32 other) {
+    function remove(bytes32Set storage self, bytes32 other) public {
         if (contains(self, other)) {
             uint replaceIndex = self.memberIndices[other];
             bytes32 lastMember = self.members[length(self)-1];
@@ -257,14 +246,11 @@ library Sets {
         }
     }
 
-    function contains(bytes32Set storage self, bytes32 other)
-        constant
-        returns (bool)
-    {
+    function contains(bytes32Set storage self, bytes32 other) public view returns (bool) {
         return self.memberIndices[other] > 0;
     }
 
-    function length(bytes32Set storage self) constant returns (uint) {
+    function length(bytes32Set storage self) public view returns (uint) {
         return self.members.length;
     }
 }
