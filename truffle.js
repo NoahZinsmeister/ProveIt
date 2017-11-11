@@ -20,7 +20,7 @@ engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(providerU
 engine.start();
 
 var gas = 4712388;
-var gasPrice = web3.toWei(1.5, "gwei");
+var gasPrice = 1.5*1e9;
 
 module.exports = {
     networks: {

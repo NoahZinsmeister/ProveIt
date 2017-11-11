@@ -28,11 +28,9 @@ contract Prover {
         owner = msg.sender;
     }
 
-    // fallback: allow internal calls
+    // fallback
     function() internal {
-        if (! this.delegatecall(msg.data)) {
-            revert();
-        }
+        revert();
     }
 
 
