@@ -32,6 +32,74 @@
             return contracts
         };
 
+        // query specific entry
+        function proveIt() {
+            var address, entry, entryHash, outcome, displayString;
+            var Prover = getContracts().Prover;
+            var Hash = getContracts().Hash;
+            address = document.getElementById("proveAddress").value
+            entry = document.getElementById("proveEntry").value
+            try {
+                Prover.entryInformation.call(address, entry, function (error, entryInfo) {
+                    if (! error) {
+                        outcome = {
+                            proved: entryInfo[0],
+                            time: entryInfo[1].toNumber(),
+                            staked: web3.fromWei(entryInfo[2].toNumber(), "ether")
+                        };
+                        var date = new Date(outcome.time*1000);
+                        var dateOptions = {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: "numeric",
+                            minute: "numeric"};
+                        var displayString = [];
+                        displayString.push(outcome.proved ? "Proved: True" : "Proved: False");
+                        displayString.push("Time: " + date.toLocaleString("en-US", dateOptions));
+                        displayString.push("Staked: " + outcome.staked + " ETH");
+                        document.getElementById("proved").innerHTML = displayString.join(" <br> ");
+                    }
+                });
+            } catch (error) {
+                document.getElementById("proved").innerHTML = error;
+            }
+        };
+
+        // query specific entry
+        function getEntries() {
+            var address, entries;
+            var Prover = getContracts().Prover;
+            address = document.getElementById("addressQuery").value
+            try {
+                Prover.userEntries.call(address, function (error, entries) {
+                    if (! error) {
+                        document.getElementById("entries").innerHTML = entries;
+                    }
+                });
+            } catch (error) {
+                document.getElementById("entries").innerHTML = error;
+            }
+        };
+
+
+        // populate read-only data
+        function readOnly() {
+            var users;
+            var Prover = getContracts().Prover;
+            try {
+                Prover.registeredUsers.call(function (error, users) {
+                    if (! error) {
+                        document.getElementById("numUsers").innerHTML = users[0].toNumber();
+                        document.getElementById("users").innerHTML = users[1];
+                    }
+                });
+            } catch (error) {
+                document.getElementById("numUsers").innerHTML = error;
+                document.getElementById("users").innerHTML = error;
+            }
+        }
+
         function hash() {
             var message, messageHash;
             var Hash = getContracts().Hash;
@@ -47,34 +115,31 @@
             }
         };
 
-        // populate read-only data
-        function readOnly() {
-            var users;
-            var Prover = getContracts().Prover;
-            try {
-                Prover.registeredUsers.call(function (error, users) {
-                    if (! error) {
-                        document.getElementById("numUsers").innerHTML = users[0].toNumber();
-                        document.getElementById("users").innerHTML = users[1];
-                    }
-                });
-            } catch (err) {
-                document.getElementById("numUsers").innerHTML = err;
-                document.getElementById("users").innerHTML = err;
-            }
-        }
     </script>
 </head>
 
 <body>
     <h1>ProveIt</h1>
+    <button type="button" onClick="readOnly();">Refresh</button>
     <p>Number of Registered Addresses:</p><div id="numUsers"></div>
     <p>Registered Addresses:</p><div id="users"></div>
     <br />
-    <p>Hash your Message:</p>
-    <input type="text" id="message" placeholder= "Your message here."/>
+
+    <p>Query Entries:</p>
+    <input type="text" id="addressQuery" size="42" placeholder="Address 0x..."/>
+    <button type="button" onClick="getEntries();">Query</button>
+    <div id="entries"></div>
+
+    <p>Hash Helper:</p>
+    <input type="text" id="message" placeholder= "Your message here"/>
     <button type="button" onClick="hash();">Hash</button>
     <div id="messageHash"></div>
+
+    <p>Prove it:</p>
+    <input type="text" id="proveAddress" placeholder= "Address 0x..."/>
+    <input type="text" id="proveEntry" placeholder= "Hash 0x..."/>
+    <button type="button" onClick="proveIt();">Prove it!</button>
+    <div id="proved"></div>
 </body>
 
 </html>
