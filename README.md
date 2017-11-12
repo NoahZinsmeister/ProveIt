@@ -14,7 +14,7 @@ ProveIt implements proof of historical data possession on the Ethereum blockchai
     3. open index.html.
 
 ### To submit an entry to ProveIt (Warning: for advanced users only)
-    * Modify `addEntry.js` as appropriate and run (`node addEntry.js`).
+* Modify `addEntry.js` as appropriate and run (`node addEntry.js`).
 
 At some point I'll be adding the ability to add/delete ledger entries via the Github Page and MetaMask, but for now you're on your own (though it's not that hard, again see `addEntry.js`).
 
