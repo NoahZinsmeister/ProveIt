@@ -11,7 +11,7 @@
             } else {
                 console.log('No Web3 Injection detected');
                 var infura_key = sessionStorage.getItem("infura_key");
-                if (infura_key !== null) {
+                if (infura_key == null) {
                     let prompt = window.prompt("Unable to detect a valid Web3 Provider. Please install MetaMask and try again, or, enter your INFURA API key.", "");
                     if (prompt) {
                         sessionStorage.setItem("infura_key", prompt);
