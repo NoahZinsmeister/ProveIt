@@ -3,17 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <script type="text/javascript" src="js/web3.min.js"></script>
-    <script type="text/javascript" src="js/secrets.js"></script>
     <script type="text/javascript">
         window.addEventListener('load', function () {
             if (typeof web3 !== 'undefined') {
-                console.log('Web3 Detected! ' + web3.currentProvider.constructor.name)
+                console.log('Web3 Injection Detected! ' + web3.currentProvider.constructor.name);
                 window.web3 = new Web3(web3.currentProvider);
             } else {
-                console.log('No Web3 Detected...using HTTP Provider')
-                window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/" + config.infuraKey));
+                console.log('No Web3 Injection detected');
+                var infura_key = sessionStorage.getItem("infura_key");
+                if (infura_key !== null) {
+                    let prompt = window.prompt("Unable to detect a valid Web3 Provider. Please install MetaMask and try again, or, enter your INFURA API key.", "");
+                    if (prompt) {
+                        sessionStorage.setItem("infura_key", prompt);
+                        console.log("INFURA API key stored");
+                        window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/" + prompt));
+                    } else {
+                        document.body.innerHTML = 'Please install MetaMask or obtain an INFURA API key.';
+                    }
+                } else {
+                    window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/" + infura_key));
+                }
             }
-            readOnly()
+            readOnly();
         });
 
         function getContracts() {
