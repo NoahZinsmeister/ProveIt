@@ -1,5 +1,21 @@
 // web3 initialization
 window.addEventListener('load', function () {
+    /* TODO: use session storage for infura key
+    console.log('No Web3 Injection detected');
+    var infura_key = sessionStorage.getItem("infura_key");
+    if (infura_key == null) {
+        let prompt = window.prompt("Unable to detect a valid Web3 Provider. Please install MetaMask and try again, or, enter your INFURA API key.", "");
+        if (prompt) {
+            sessionStorage.setItem("infura_key", prompt);
+            console.log("INFURA API key stored");
+            window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/" + prompt));
+        } else {
+            document.body.innerHTML = 'Please install MetaMask or obtain an INFURA API key.';
+        }
+    } else {
+        window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/" + infura_key));
+    */
+
     if (typeof web3 !== 'undefined') {
         console.log('Web3 injection detected', web3.currentProvider.constructor.name)
         window.web3 = new Web3(web3.currentProvider);
@@ -42,7 +58,7 @@ $(function() {
         };
         var abis = {
             Hash: [{"constant":true,"inputs":[{"name":"dataString","type":"string"}],"name":"hashString","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"pure","type":"function"},{"constant":true,"inputs":[{"name":"dataBytes","type":"bytes"}],"name":"hashBytes","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"pure","type":"function"},{"constant":false,"inputs":[],"name":"selfDestruct","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":false,"stateMutability":"nonpayable","type":"fallback"}],
-            Prover:
+            Prover: [{"constant":true,"inputs":[{"name":"target","type":"address"},{"name":"dataHash","type":"bytes32"}],"name":"entryInformation","outputs":[{"name":"proved","type":"bool"},{"name":"time","type":"uint256"},{"name":"staked","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"dataHash","type":"bytes32"}],"name":"addEntry","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"registeredUsers","outputs":[{"name":"unique_addresses","type":"address[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"selfDestruct","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"target","type":"address"}],"name":"userEntries","outputs":[{"name":"entries","type":"bytes32[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"dataHash","type":"bytes32"}],"name":"deleteEntry","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":false,"stateMutability":"nonpayable","type":"fallback"}]
         };
         return {
             Hash: web3.eth.contract(abis.Hash).at(addresses.Hash),
