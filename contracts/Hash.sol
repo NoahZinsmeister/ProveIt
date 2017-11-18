@@ -14,8 +14,12 @@ contract Hash {
         revert();
     }
 
-    function hash(string dataString) public pure returns(bytes32){
+    function hashString(string dataString) public pure returns(bytes32){
         return(keccak256(dataString));
+    }
+
+    function hashBytes(bytes dataBytes) public pure returns(bytes32){
+        return(keccak256(dataBytes));
     }
 
     function selfDestruct() public {

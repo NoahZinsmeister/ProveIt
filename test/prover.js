@@ -5,9 +5,9 @@ contract('Prover', function(accounts) {
         let instance = await Prover.deployed();
         let users = await instance.registeredUsers.call();
         assert.equal(
-            users[0].toNumber(),
+            users.length,
             0,
-            "'>0 users found at the start: [" + users[1] + "]"
+            "'>0 users found at the start"
         );
     });
 
@@ -24,7 +24,7 @@ contract('Prover', function(accounts) {
         let instance = await Prover.deployed();
         await instance.addEntry(web3.sha3(test_string), {from: accounts[1]});
         let users = await instance.registeredUsers.call();
-        assert.equal(users[0].toNumber(), 2, "second user not recognized");
+        assert.equal(users.length, 2, "second user not recognized");
         let entry0 = await instance.entryInformation(accounts[0], web3.sha3(test_string));
         let entry1 = await instance.entryInformation(accounts[1], web3.sha3(test_string));
         assert.isTrue(entry0[0] && entry1[0], "entry not the same");

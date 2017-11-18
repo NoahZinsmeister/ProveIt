@@ -24,7 +24,7 @@ At some point I'll be adding the ability to add/delete ledger entries via the Gi
 
 ### Technical notes
 * While building ProveIt, I realized that having set functionality would be helpful, so I implemented it in contracts/Sets.sol. It's quite efficient, with O(1) insertion, removal, and existence checks.
-* Migrations.sol is deployed at: ```0xe5F0323264ff7988e74974295C8BBc215fe58B26``` and is [verified on Etherscan](https://etherscan.io/address/0xe5f0323264ff7988e74974295c8bbc215fe58b26).
-* Hash.sol is deployed at: ```0xa7620C421d29db2bb991cD603a725b960E927cEd``` and is [verified on Etherscan](https://etherscan.io/address/0xa7620c421d29db2bb991cd603a725b960e927ced).
-* Sets.sol is deployed at: ```0xfA5e85584c895483aF162b6B87b6e8730bD41183``` and is [verified on Etherscan](https://etherscan.io/address/0xfa5e85584c895483af162b6b87b6e8730bd41183).
-* Prover.sol is deployed at: ```0x1f5cDff41Fb9B17996D6F0fcA6Ab9C5bEd96F20f``` and is [verified on Etherscan](https://etherscan.io/address/0x1f5cdff41fb9b17996d6f0fca6ab9c5bed96f20f).
+* Migrations.sol is deployed at: ```0x57820093e4a39c072386543fe99d51b7b17dd426``` and is [verified on Etherscan](https://etherscan.io/address/0x57820093e4a39c072386543fe99d51b7b17dd426).
+* Hash.sol is deployed at: ```0xca260ffffb0270ee07ec6892fa9d44f040454e4d``` and is [verified on Etherscan](https://etherscan.io/address/0x48d904b3bf1cfcd7e1ce2dbcf7dcaecf0b0575c6).
+* Sets.sol is deployed at: ```0x48d904b3bf1cfcd7e1ce2dbcf7dcaecf0b0575c6``` and is [verified on Etherscan](https://etherscan.io/address/0x48d904b3bf1cfcd7e1ce2dbcf7dcaecf0b0575c6).
+* Prover.sol is deployed at: ```0x117ca39dffc4da6fb3af6145dfff246830637fe2``` and is [verified on Etherscan](https://etherscan.io/address/0x117ca39dffc4da6fb3af6145dfff246830637fe2).

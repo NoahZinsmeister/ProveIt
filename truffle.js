@@ -1,10 +1,10 @@
 var secrets = require('./secrets.js')
 var ethereumjsWallet = require('ethereumjs-wallet');
+var Web3 = require("web3");
 var ProviderEngine = require("web3-provider-engine");
+var FilterSubprovider = require('web3-provider-engine/subproviders/filters.js');
 var WalletSubprovider = require('web3-provider-engine/subproviders/wallet.js');
 var Web3Subprovider = require("web3-provider-engine/subproviders/web3.js");
-var Web3 = require("web3");
-var FilterSubprovider = require('web3-provider-engine/subproviders/filters.js');
 
 // create wallet from existing private key
 var privateKey = secrets.config.myPrivateKey;
@@ -13,8 +13,8 @@ var wallet = ethereumjsWallet.fromPrivateKey(new Buffer(privateKey, "hex"));
 // mainnet
 var providerUrl = "https://mainnet.infura.io/" + secrets.config.infuraKey;
 var engine = new ProviderEngine();
-
 engine.addProvider(new FilterSubprovider());
+//engine.addProvider(new WalletSubprovider(wallet, {}));
 engine.addProvider(new WalletSubprovider(wallet, {}));
 engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(providerUrl)));
 engine.start();

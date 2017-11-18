@@ -45,13 +45,13 @@ contract Prover {
     function registeredUsers()
         external
         view
-        returns (uint number_unique_addresses, address[] unique_addresses) {
-        return (users.length(), users.members);
+        returns (address[] unique_addresses) {
+        return users.members;
     }
     function userEntries(address target)
         external
         view
-        returns (bytes32[]) {
+        returns (bytes32[] entries) {
         return accounts[target].entries.members;
     }
     function entryInformation(address target, bytes32 dataHash)
