@@ -21,7 +21,7 @@ window.addEventListener('load', function () {
         window.web3 = new Web3(web3.currentProvider);
     } else {
         console.log('No Web3 injection detected')
-        window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/zKmHyEn4VwJ4in3cptiL"));
+        window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/INFURA_KEY"));
     }
 });
 
