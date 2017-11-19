@@ -13,7 +13,7 @@ var nonce = web3.toHex(web3.eth.getTransactionCount(fromAddress));
 var balance = web3.fromWei(web3.eth.getBalance(fromAddress).toNumber(), "ether");
 
 // Prover's latest deployed address
-var toAddress = '0x1f5cDff41Fb9B17996D6F0fcA6Ab9C5bEd96F20f';
+var toAddress = '0x117ca39dffc4da6fb3af6145dfff246830637fe2';
 
 // gas variables
 var gasPrice = web3.toHex(1*1e9);
