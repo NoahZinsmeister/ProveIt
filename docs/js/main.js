@@ -78,30 +78,6 @@ var helper = {
 
 // DOM-dependent stuff
 $(function() {
-    function htmlElements() {
-        var out = {};
-        var elements = [
-            "progressBar",
-            "fileHashModal",
-            "registeredUsersNumber",
-            "registeredUsersAddresses",
-            "userEntriesAddress",
-            "userEntriesSubmit",
-            "userEntries",
-            "entryType",
-            "entryInformationAddress",
-            "entryInformationEntry",
-            "entryInformationSubmit",
-            "entryInformation",
-            "entryToggle"
-        ];
-        for (let i=0; i<elements.length; i++) {
-            out[elements[i]] = document.getElementById(elements[i]);
-        }
-        return out
-    }
-    helper.elements = htmlElements();
-
     // callback functions
     function registeredUsers() {
         var Prover = helper.contracts.Prover;
@@ -110,66 +86,84 @@ $(function() {
             if (error) {
                 console.log(error);
             } else {
-                helper.elements["registeredUsersNumber"].innerHTML = users.length;
-                helper.elements["registeredUsersAddresses"].innerHTML = users;
+                var itemHTML = '<li class="list-group-item"></li>';
+                for (let i=0; i < users.length; i++) {
+                    $("#registeredUsersAddresses").append(itemHTML);
+                }
+                // add addresses
+                $('#registeredUsersAddresses li').each(function (index) {
+                    $(this).text(users[index]);
+                });
+                // update badge
+                $("#registeredUsersNumber").html(users.length);
             }
         });
     }
     // export to helper so that we can autopopulate
     helper.registeredUsers = registeredUsers;
 
-    function userEntries() {
+    function userEntries(event) {
         var Prover = helper.contracts.Prover;
-        var address = helper.elements["userEntriesAddress"].value;
+        var address = $("#userEntriesAddress").val();
 
         Prover.userEntries.call(address, function (error, entries) {
+            $('#entriesList').html("");
             if (error) {
                 console.log(error);
+                $("#userEntries").html("&nbsp;");
             } else {
                 if (entries.length >= 1) {
-                    helper.elements["userEntries"].innerHTML = entries;
+                    $("#userEntries").html(entries.length + " " + (entries.length == 1 ? "entry" : "entries") + " found");
+                    $("#userEntries").removeClass("noselect alert-dark alert-danger alert-success");
+                    $("#userEntries").addClass("alert-success");
+                    // add list items
+                    var itemHTML = '<li class="list-group-item"></li>';
+                    for (let i=0; i < entries.length; i++) {
+                        $("#entriesList").append(itemHTML);
+                    }
+                    // add addresses
+                    $('#entriesList li').each(function (index) {
+                        $(this).text(entries[index]);
+                    });
                 } else {
-                    helper.elements["userEntries"].innerHTML = "No entries found.";
+                    $("#userEntries").removeClass("alert-dark alert-danger alert-success");
+                    $("#userEntries").addClass("alert-danger");
+                    $("#userEntries").html("No entries found");
                 }
             }
         });
     }
 
     async function entryInformation() {
+        stateChange("default", "&nbsp;");
         function stateChange(state, text) {
-            var element = helper.elements["entryInformation"];
-            var child = element.getElementsByTagName('p')[0];
+            var element = $("#entryInformation");
+            element.removeClass("alert-dark alert-danger alert-success noselect");
             if (state == "proven") {
-                $(element).removeClass("border-secondary bg-danger");
-                $(element).addClass('bg-success text-white copyable');
-                $(child).removeClass("text-muted noselect");
+                element.addClass('alert-success');
             } else if (state == "unproven") {
-                $(element).removeClass('border-secondary bg-success');
-                $(element).addClass('bg-danger text-white');
-                $(child).removeClass("text-muted");
+                element.addClass('alert-danger noselect');
             } else if (state == "default") {
-                $(element).removeClass('bg-danger bg-success text-white');
-                $(element).addClass('border-secondary');
-                $(child).addClass("text-muted noselect");
+                element.addClass('alert-dark noselect');
             }
-            child.innerHTML = text;
+            element.html(text);
         }
-        var address = helper.elements["entryInformationAddress"].value;
-        var entryType = helper.elements["entryType"].innerHTML;
+        var address = $("#entryInformationAddress").val();
+        var entryType = $("#entryType").html();
         var hash;
         if (entryType == "Entry Hash") {
-            hash = helper.elements["entryInformationEntry"].value;
+            hash = $(".entryText").val();
         } else if (entryType == "Text") {
-            hash = hashMessage(helper.elements["entryInformationEntry"].value);
+            hash = hashMessage($(".entryText").val());
         } else if (entryType == "File") {
-            var fileList = helper.elements["entryInformationEntry"].files;
+            var fileList = $(".custom-file-input")[0].files;
             if (fileList.length !== 1) {
                 console.log('Please select 1 and only 1 file.');
                 return;
             }
             var file = fileList[0];
-            helper.elements["progressBar"].style = "width: 0%";
-            $(helper.elements["fileHashModal"]).modal('show');
+            $("#progressBar").style = "width: 0%";
+            $("#fileHashModal").modal('show');
             hash = await hashFile(file);
         }
         var Prover = helper.contracts.Prover;
@@ -177,7 +171,6 @@ $(function() {
         Prover.entryInformation.call(address, hash, function (error, entryInfo) {
             if (error) {
                 console.log(error);
-                stateChange("default", "Result");
             } else {
                 if (entryInfo[0]) {
                     var date = new Date(entryInfo[1].toNumber() * 1000);
@@ -207,23 +200,24 @@ $(function() {
 
         var errorCallback = function(error) {
             console.log(error);
-            $(helper.elements["fileHashModal"]).modal('hide');
+            $("#fileHashModal").modal('hide');
         }
         var chunkCallback = function(chunk, percentDone) {
             hashObject.update(chunk);
-            helper.elements["progressBar"].style = "width: " + percentDone.toString() + "%";
+            $("#progressBar").attr("style", "width: " + percentDone.toString() + "%");
         }
         var finishedCallback = function() {
             success = true;
-            $(helper.elements["fileHashModal"]).modal('hide');
+            $("#fileHashModal").modal('hide');
         }
         helper.parseFile(file, {
             "errorCallback": errorCallback,
             "chunkCallback": chunkCallback,
             "finishedCallback": finishedCallback
         });
-        while (($(helper.elements["fileHashModal"]).data('bs.modal') || {})._isShown) {
-            await helper.sleep(500);
+        // await until the modal closes
+        while (($("#fileHashModal").data('bs.modal') || {})._isShown) {
+            await helper.sleep(100);
         }
         if (success) {
             return helper.hexFormat(hashObject.hex());
@@ -231,16 +225,16 @@ $(function() {
     }
 
     // add event listeners
-    helper.elements["userEntriesSubmit"].addEventListener("click", userEntries);
-    helper.elements["entryInformationSubmit"].addEventListener("click", entryInformation);
+    $("#userEntriesSubmit")[0].addEventListener("click", userEntries);
+    $("#entryInformationSubmit")[0].addEventListener("click", entryInformation);
 
     // add clipboard functionality
     var clipboard = new Clipboard('.copyable');
-    clipboard.on('success', function(e) {
-        console.log(e);
+    clipboard.on('success', function(event) {
+        console.log(event);
     });
     clipboard.on('error', function(e) {
-        console.log(e);
+        console.log(event);
     });
 
     $("#entryToggle button").on('click', function (event) {
@@ -249,36 +243,55 @@ $(function() {
             "Entry Hash": "0x...",
             "Text": "Your message...",
         };
-        var selection = this.innerHTML;
-        if (selection != "File") {
-            helper.elements["entryInformationEntry"].type = "text";
-            helper.elements["entryInformationEntry"].placeholder = placeholders[selection];
-            helper.elements["entryInformationEntry"].value = "";
-        } else {
-            $(helper.elements["entryInformationEntry"]).removeAttr("placeholder");
-            helper.elements["entryInformationEntry"].type = "file";
-        }
+        var selection = $(this).html();
         // update the addon text
-        helper.elements["entryType"].innerHTML = selection;
+        $("#entryType").html(selection);
+        // hide both
+        $(".entryFile").hide()
+        $(".entryText").hide()
+        // unhide the right one
+        if (selection != "File") {
+            $(".entryText").show();
+            $(".entryText").attr("placeholder", placeholders[selection]);
+            $(".entryText").val("");
+        } else {
+            $(".entryFile").show()
+            $(".entryFile").val("");
+        }
     });
 
     // this is also tried on window load
     if (helper.web3) {
         registeredUsers();
     }
+
+    function fileUploadListener () {
+        var fileName = $(this).val().split("\\").pop();
+        $(this).next('.custom-file-control').addClass("selected").html(fileName);
+    }
+    // hide and add event listener to file uploader
+    $(".entryFile").children("input").on('change', fileUploadListener);
+    $(".entryFile").hide()
+
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip()
+    })
+
 });
 
 // web3 initialization
 $(window).on("load", function () {
     function initializeWeb3() {
         if (typeof web3 !== 'undefined') {
-            console.log('Web3 injection detected: ', web3.currentProvider.constructor.name);
             window.web3 = new Web3(web3.currentProvider);
             helper.web3 = true;
+            $("#web3Button").attr("title", "Web3 Provider detected: " + web3.currentProvider.constructor.name);
+            $("#web3Button").removeClass("btn-outline-danger");
+            $("#web3Button").addClass("btn-outline-success");
         } else {
             console.log('No Web3 injection detected');
-            window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/key"));
-            helper.web3 = true;
+            //window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/key"));
+            //helper.web3 = true;
         }
     }
     function getContracts() {

@@ -19,20 +19,22 @@
 
 <body>
     <main role="main">
-        <!-- Modal -->
+        <!-- file hashing Modal -->
         <div class="modal" id="fileHashModal" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
+            <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Hashing File</h5>
+                        <h5 class="modal-title" id="exampleModalLabel">Processing</h5>
                     </div>
                     <div class="modal-body">
-                        Please be patient, your file is being uploaded and hashed. And in case you're wondering: it's <em>impossible</em> for us to see the contents of your file.
+                        Please be patient while your file is hashed. And in case you're wondering: we <strong>never</strong> see the contents of your file.
                     </div>
-                    <div class="progress mx-5">
-                      <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    <div class="col-sm-10 mt-5 mx-auto">
+                        <div class="progress">
+                            <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
                     </div>
-                    <div class="modal-footer">
+                    <div class="modal-footer mt-5">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                     </div>
                 </div>
@@ -49,71 +51,70 @@
 
         <!-- Nav bar -->
         <div class="container">
-            <ul class="nav nav-tabs nav-fill nav-justified" id="navTabs" role="tablist">
-              <li class="nav-item">
-                <a class="nav-link active" id="read-tab" data-toggle="tab" href="#read" role="tab">Read</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" id="submit-tab" data-toggle="tab" href="#submit" role="tab">Submit</a>
-              </li>
+            <ul class="nav nav-tabs nav-fill nav-justified h2" id="navTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="read-tab" data-toggle="tab" href="#read" role="tab">Read</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="submit-tab" data-toggle="tab" href="#submit" role="tab">Submit</a>
+                </li>
             </ul>
             <div class="tab-content" id="navTabsContent">
                 <!-- Read tab -->
                 <div class="tab-pane fade show active" id="read" role="tabpanel">
                     <!-- registeredAddresses -->
-                    <h4 class="text-center mt-5">Registered Addresses</h4>
-                    <div id="accordion" role="tablist">
-                        <div class="card">
-                            <div class="card-header" role="tab" id="headingOne">
-                                <h5 class="mb-0">
-                                    <a data-toggle="collapse" href="#collapseOne">
-                                        Users
-                                    </a>
-                                    <span id="registeredUsersNumber" class="badge badge-primary badge-pill"></span>
-                                </h5>
-                            </div>
-                            <div id="collapseOne" class="collapse show" role="tabpanel" data-parent="#accordion">
-                                <ul class="list-group">
-                                    <li id="registeredUsersAddresses" class="list-group-item"></li>
-                                </ul>
-                            </div>
-                        </div>
+                    <div class="col h4 mt-5 text-center">
+                    <a class="nounderline" data-toggle="collapse" href="#registeredUsersAddresses" role="tab">Registered Users  <span id="registeredUsersNumber" class="badge badge-primary badge-pill"></span></a>
                     </div>
+                    <ul class="list-group mt-3" id="accordion" role="tablist">
+                        <div id="registeredUsersAddresses" class="collapse scrollable" role="tabpanel" data-parent="#accordion">
+                            <!-- <li class="list-group-item"></li> -->
+                        </div>
+                    </ul>
 
                     <!-- userEntries -->
                     <h4 class="text-center mt-5">User Entries</h4>
                     <form>
-                        <div class="row align-items-center">
-                            <div class="col-sm-11">
+                        <div class="form-row">
+                            <div class="form-group col-lg">
                                 <div class="input-group">
                                     <div class="input-group-addon">Address</div>
                                     <input type="text" class="form-control" id="userEntriesAddress" placeholder="0x...">
                                 </div>
                             </div>
-                            <div class="col-sm-1">
-                                <button type="button" class="btn btn-primary" id="userEntriesSubmit">Query</button>
-                            </div>
                         </div>
-                    </form>
-                    <div class="card mt-3 text-center border-secondary" id="userEntries">
-                        <p class="card-text card-body text-muted noselect">Result</p>
-                    </div>
-
-                    <!-- ProveIt -->
-
-                    <h4 class="text-center mt-5">Prove It</h4>
-                    <form class="form-inline">
-                        <div class="row align-items-center">
-                            <div class="col-sm-4">
-                                <div class="input-group">
-                                    <div class="input-group-btn">
-                                        <div class="input-group-addon">Address</div>
-                                    </div>
-                                        <input type="text" class="form-control" id="entryInformationAddress" placeholder="0x...">
+                        <div class="form-row">
+                            <div class="form-group col-lg-1">
+                                <button type="button" class="h-100 form-control btn btn-outline-primary nofocus" id="userEntriesSubmit">Query</button>
+                            </div>
+                            <div class="form-group col-lg-11 mb-0 text-center">
+                                <div class="alert alert-dark noselect" id="userEntries" data-toggle="collapse" href="#entriesList" role="tab">
+                                    &nbsp;
                                 </div>
                             </div>
-                            <div class="col-sm-6">
+                        </div>
+                        <div class="form-row mt-0">
+                            <span class="col-lg-1"></span>
+                            <ul class="list-group col-lg-11" role="tablist">
+                                <div id="entriesList" class="collapse scrollable" role="tabpanel" data-parent="#userEntries">
+                                </div>
+                            </ul>
+                        </div>
+
+                    </form>
+
+                    <!-- ProveIt -->
+                    <h4 class="text-center mt-5">Prove It</h4>
+                    <form>
+                        <div class="form-row">
+                            <div class="form-group col-lg-5">
                                 <div class="input-group">
+                                    <div class="input-group-addon">Address</div>
+                                    <input type="text" class="form-control" id="entryInformationAddress" placeholder="0x...">
+                                </div>
+                            </div>
+                            <div class="form-group col-lg-7">
+                                <div class="input-group" id="entrySelectorDiv">
                                     <div class="input-group-btn">
                                         <button id="entryType" type="button" class="btn btn-secondary dropdown-toggle input-group-addon" data-toggle="dropdown">Entry Hash</button>
                                         <div class="dropdown-menu" id="entryToggle">
@@ -122,21 +123,37 @@
                                             <button class="dropdown-item" type="button">File</button>
                                         </div>
                                     </div>
-                                    <input type="text" class="form-control" id="entryInformationEntry" placeholder="0x...">
+                                    <label class="custom-file col-lg entryFile">
+                                        <input type="file" id="entryInformationEntry" class="custom-file-input">
+                                        <span class="custom-file-control rounded-right"></span>
+                                    </label>
+                                    <input type="text" class="form-control entryText" id="entryInformationEntry" placeholder="0x...">
                                 </div>
                             </div>
-                            <div class="col-sm-2">
-                                <button type="button" class="btn btn-primary" id="entryInformationSubmit">ProveIt</button>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-lg-1">
+                                <button type="button" class="h-100 form-control btn btn-outline-primary nofocus" id="entryInformationSubmit">ProveIt</button>
+                            </div>
+                            <div class="form-group col-lg-11 mb-0 text-center">
+                                <div class="alert alert-dark noselect" id="entryInformation" role="alert">
+                                    &nbsp;
+                                </div>
                             </div>
                         </div>
                     </form>
-                    <div class="card mt-3 text-center border-secondary" id="entryInformation">
-                        <p class="card-text card-body text-muted noselect">Result</p>
-                    </div>
                 </div>
-                <div class="tab-pane fade text-center" id="submit" role="tabpanel"><p class="mt-5">Submission to ProveIt via <a target="_blank" class="nounderline" href="https://metamask.io/">Metamask</a> is coming soon.</p></div>
+                <div class="tab-pane fade text-center" id="submit" role="tabpanel"><p class="mt-5">Submission to ProveIt via <a target="_blank" class="nounderline" href="https://metamask.io/">MetaMask</a> is coming soon.</p></div>
             </div>
         </div>
     </main>
+    <!-- Footer -->
+    <footer class="footer">
+      <div id="foxContainer" class="container-fluid text-right">
+          <button id="web3Button" type="button" class="btn btn-outline-danger nofocus" data-toggle="tooltip" data-placement="left" title="No Web3 provider detected. Consider installing MetaMask.">
+            Web3
+          </button>
+      </div>
+    </footer>
 </body>
 </html>
