@@ -285,14 +285,13 @@ $(window).on("load", function () {
         if (typeof web3 !== 'undefined') {
             window.web3 = new Web3(web3.currentProvider);
             helper.web3 = true;
-            $("#web3Button").attr("title", "Web3 Provider detected: " + web3.currentProvider.constructor.name);
-            $("#web3Button").removeClass("btn-outline-danger");
-            $("#web3Button").addClass("btn-outline-success");
         } else {
-            console.log('No Web3 injection detected');
-            //window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/key"));
-            //helper.web3 = true;
+            window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/zKmHyEn4VwJ4in3cptiL"));
+            helper.web3 = true;
         }
+        $("#web3Button").attr("title", "Web3 Provider detected: " + web3.currentProvider.constructor.name);
+        $("#web3Button").removeClass("btn-outline-danger");
+        $("#web3Button").addClass("btn-outline-success");
     }
     function getContracts() {
         var addresses = {
