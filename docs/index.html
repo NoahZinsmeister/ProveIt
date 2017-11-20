@@ -58,21 +58,28 @@
                 <li class="nav-item">
                     <a class="nav-link" id="submit-tab" data-toggle="tab" href="#submit" role="tab">Submit</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="submit-tab" data-toggle="tab" href="#about" role="tab">About</a>
+                </li>
             </ul>
             <div class="tab-content" id="navTabsContent">
                 <!-- Read tab -->
                 <div class="tab-pane fade show active" id="read" role="tabpanel">
                     <!-- registeredAddresses -->
-                    <div class="col h4 mt-5 text-center">
-                    <a class="nounderline" data-toggle="collapse" href="#registeredUsersAddresses" role="tab">Registered Users  <span id="registeredUsersNumber" class="badge badge-primary badge-pill"></span></a>
+                    <div class="col mt-5 text-center">
+                    <a class="nounderline h4" data-toggle="collapse" href="#registeredUsersAddresses" role="tab">Registered Users  <span id="registeredUsersNumber" class="badge badge-primary badge-pill"></span></a>
                     </div>
                     <ul class="list-group mt-3" id="accordion" role="tablist">
                         <div id="registeredUsersAddresses" class="collapse scrollable show" role="tabpanel" data-parent="#accordion">
                         </div>
                     </ul>
 
+                    <span class="my-5">
+                    <hr class="my-5 rounded">
+                    <span class="my-5">
+
                     <!-- userEntries -->
-                    <h4 class="text-center mt-5">User Entries</h4>
+                    <h4 class="text-center">User Entries</h4>
                     <form>
                         <div class="form-row">
                             <div class="form-group col-lg">
@@ -95,12 +102,16 @@
                         <div class="form-row mt-0">
                             <span class="col-lg-1"></span>
                             <ul class="list-group col-lg-11" role="tablist">
-                                <div id="entriesList" class="collapse scrollable" role="tabpanel" data-parent="#userEntries">
+                                <div id="entriesList" class="collapse scrollable show" role="tabpanel" data-parent="#userEntries">
                                 </div>
                             </ul>
                         </div>
 
                     </form>
+
+                    <span class="my-5">
+                    <hr class="my-5 rounded">
+                    <span class="my-5">
 
                     <!-- ProveIt -->
                     <h4 class="text-center mt-5">Prove It</h4>
@@ -143,12 +154,13 @@
                     </form>
                 </div>
                 <div class="tab-pane fade text-center" id="submit" role="tabpanel"><p class="mt-5">Submission to ProveIt via <a target="_blank" class="nounderline" href="https://metamask.io/">MetaMask</a> is coming soon.</p></div>
+                <div class="tab-pane fade text-center" id="about" role="tabpanel"><p class="mt-5">For more information on ProveIt, visit our <a target="_blank" class="nounderline" href="https://github.com/NoahZinsmeister/ProveIt">Github</a>.</p></div>
             </div>
         </div>
     </main>
     <!-- Footer -->
     <footer class="footer">
-      <div id="foxContainer" class="container-fluid text-right">
+        <div class="container-fluid text-right">
           <button id="web3Button" type="button" class="btn btn-outline-danger nofocus" data-toggle="tooltip" data-placement="left" title="No Web3 provider detected. Consider installing MetaMask.">
             Web3
           </button>

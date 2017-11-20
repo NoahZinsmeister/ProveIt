@@ -86,7 +86,7 @@ $(function() {
             if (error) {
                 console.log(error);
             } else {
-                var itemHTML = '<li class="list-group-item"></li>';
+                var itemHTML = '<li class="list-group-item copyable"></li>';
                 for (let i=0; i < users.length; i++) {
                     $("#registeredUsersAddresses").append(itemHTML);
                 }
@@ -96,6 +96,8 @@ $(function() {
                 });
                 // update badge
                 $("#registeredUsersNumber").html(users.length);
+                // initialize tooltips
+                initializeCopyables();
             }
         });
     }
@@ -117,7 +119,7 @@ $(function() {
                     $("#userEntries").removeClass("noselect alert-dark alert-danger alert-success");
                     $("#userEntries").addClass("alert-success");
                     // add list items
-                    var itemHTML = '<li class="list-group-item"></li>';
+                    var itemHTML = '<li class="list-group-item copyable"></li>';
                     for (let i=0; i < entries.length; i++) {
                         $("#entriesList").append(itemHTML);
                     }
@@ -125,10 +127,12 @@ $(function() {
                     $('#entriesList li').each(function (index) {
                         $(this).text(entries[index]);
                     });
+                    // initialize tooltips
+                    initializeCopyables();
                 } else {
                     $("#userEntries").removeClass("alert-dark alert-danger alert-success");
                     $("#userEntries").addClass("alert-danger");
-                    $("#userEntries").html("No entries found");
+                    $("#userEntries").html("No entries found.");
                 }
             }
         });
@@ -140,7 +144,8 @@ $(function() {
             var element = $("#entryInformation");
             element.removeClass("alert-dark alert-danger alert-success noselect");
             if (state == "proven") {
-                element.addClass('alert-success');
+                element.addClass('alert-success copyable');
+                initializeCopyables();
             } else if (state == "unproven") {
                 element.addClass('alert-danger noselect');
             } else if (state == "default") {
@@ -179,10 +184,10 @@ $(function() {
                     displayString.push(date.toLocaleString("en-US", {year: 'numeric', month: 'long', day: 'numeric'}));
                     displayString.push("at");
                     displayString.push(date.toLocaleString("en-US", {hour: "numeric", minute: "numeric"}));
-                    displayString.push("against " + web3.fromWei(entryInfo[2].toNumber(), "ether") + " ETH");
+                    displayString.push("against " + web3.fromWei(entryInfo[2].toNumber(), "ether") + " ETH.");
                     stateChange("proven", displayString.join(" "));
                 } else {
-                    stateChange("unproven", "Unproven");
+                    stateChange("unproven", "Unproven.");
                 }
             }
         });
@@ -229,12 +234,26 @@ $(function() {
     $("#entryInformationSubmit")[0].addEventListener("click", entryInformation);
 
     // add clipboard functionality
-    var clipboard = new Clipboard('.copyable');
+    var clipboard = new Clipboard('.copyable', {
+        text: function(trigger) {
+            return trigger.innerText;
+    }
+    });
     clipboard.on('success', function(event) {
-        console.log(event);
+        console.log(event.trigger);
+        $(event.trigger).tooltip('hide')
+          .attr('data-original-title', "Copied!")
+          .tooltip('show');
+        // change all others to not copied
+        $('.copyable').not($(event.trigger))
+        .tooltip('hide')
+          .attr('data-original-title', "Copy to clipboard.");
     });
     clipboard.on('error', function(e) {
-        console.log(event);
+        $(event.trigger).tooltip('hide')
+          .attr('data-original-title', "An error occured, please copy manually.")
+          .tooltip('show');
+        $(event.trigger).attr("title", ".");
     });
 
     $("#entryToggle button").on('click', function (event) {
@@ -276,7 +295,11 @@ $(function() {
     $(function () {
       $('[data-toggle="tooltip"]').tooltip()
     })
-
+    function initializeCopyables() {
+        $('.copyable').attr("data-toggle", "tooltip")
+        .attr("data-placement", "right")
+        .attr("title", "Copy to clipboard.").tooltip()
+      }
 });
 
 // web3 initialization
