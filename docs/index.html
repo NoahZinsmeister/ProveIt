@@ -1,170 +1,155 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>ProveIt</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="Proof of historical data possession on the Ethereum blockchain.">
-    <meta name="author" content="Noah Zinsmeister">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
-    <link rel="stylesheet" href="css/main.css">
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
-    <script src="https://cdn.rawgit.com/zenorocha/clipboard.js/v1.7.1/dist/clipboard.min.js"></script>
-    <script type="text/javascript" src="https://rawgit.com/ethereum/web3.js/master/dist/web3.min.js"></script>
-    <script type="text/javascript" src="https://rawgit.com/emn178/js-sha3/master/build/sha3.min.js"></script>
-    <script type="text/javascript" src="js/main.js"></script>
+  <title>ProveIt</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Proof of historical data possession on the Ethereum blockchain.">
+  <meta name="author" content="Noah Zinsmeister">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./favicons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./favicons/favicon-16x16.png">
+  <link rel="manifest" href="./favicons/manifest.json">
+  <link rel="mask-icon" href="./favicons/safari-pinned-tab.svg" color="#5bbad5">
+  <link rel="shortcut icon" href="./favicons/favicon.ico">
+  <meta name="msapplication-config" content="./favicons/browserconfig.xml">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/main.css">
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+  <script src="https://cdn.rawgit.com/zenorocha/clipboard.js/v1.7.1/dist/clipboard.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.css">
+  <script src="https://cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.js"></script>
+  <script type="text/javascript" src="https://rawgit.com/ethereum/web3.js/master/dist/web3.min.js"></script>
+  <script type="text/javascript" src="https://rawgit.com/emn178/js-sha3/master/build/sha3.min.js"></script>
+  <script type="text/javascript" src="js/main.js"></script>
 </head>
 
 <body>
-    <main role="main">
-        <!-- file hashing Modal -->
-        <div class="modal" id="fileHashModal" tabindex="-1" role="dialog">
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Processing</h5>
-                    </div>
-                    <div class="modal-body">
-                        Please be patient while your file is hashed. And in case you're wondering: we <strong>never</strong> see the contents of your file.
-                    </div>
-                    <div class="col-sm-10 mt-5 mx-auto">
-                        <div class="progress">
-                            <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    <div class="modal-footer mt-5">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    </div>
-                </div>
+  <main role="main">
+    <!-- file hashing Modal -->
+    <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".modal">Large modal</button> -->
+    <div class="modal container" id="fileHashModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Processing</h5>
+          </div>
+          <div class="modal-body">
+            Please be patient while your file is hashed. And in case you're wondering: we <strong>never</strong> see the contents of your file.
+          </div>
+          <div class="mt-5 w-75 text-center mx-auto">
+            <div class="progress">
+              <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
             </div>
+          </div>
+          <div class="modal-footer mt-5">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
         </div>
-
-        <!-- Jumbotron -->
-        <div class="jumbotron">
-            <div class="container">
-                <h1 class="display-2">Pr⟠veIt</h1>
-                <p class="lead">Proof of historical data possession on the <a target="_blank" class="nounderline" href="https://www.ethereum.org/">Ethereum</a> blockchain</p>
-            </div>
-        </div>
-
-        <!-- Nav bar -->
-        <div class="container">
-            <ul class="nav nav-tabs nav-fill nav-justified h2" id="navTabs" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" id="read-tab" data-toggle="tab" href="#read" role="tab">Read</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="submit-tab" data-toggle="tab" href="#submit" role="tab">Submit</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="submit-tab" data-toggle="tab" href="#about" role="tab">About</a>
-                </li>
-            </ul>
-            <div class="tab-content" id="navTabsContent">
-                <!-- Read tab -->
-                <div class="tab-pane fade show active" id="read" role="tabpanel">
-                    <!-- registeredAddresses -->
-                    <div class="col mt-5 text-center">
-                    <a class="nounderline h4" data-toggle="collapse" href="#registeredUsersAddresses" role="tab">Registered Users  <span id="registeredUsersNumber" class="badge badge-primary badge-pill"></span></a>
-                    </div>
-                    <ul class="list-group mt-3" id="accordion" role="tablist">
-                        <div id="registeredUsersAddresses" class="collapse scrollable show" role="tabpanel" data-parent="#accordion">
-                        </div>
-                    </ul>
-
-                    <span class="my-5">
-                    <hr class="my-5 rounded">
-                    <span class="my-5">
-
-                    <!-- userEntries -->
-                    <h4 class="text-center">User Entries</h4>
-                    <form>
-                        <div class="form-row">
-                            <div class="form-group col-lg">
-                                <div class="input-group">
-                                    <div class="input-group-addon">Address</div>
-                                    <input type="text" class="form-control" id="userEntriesAddress" placeholder="0x...">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group col-lg-1">
-                                <button type="button" class="h-100 form-control btn btn-outline-primary nofocus" id="userEntriesSubmit">Query</button>
-                            </div>
-                            <div class="form-group col-lg-11 mb-0 text-center">
-                                <div class="alert alert-dark noselect" id="userEntries" data-toggle="collapse" href="#entriesList" role="tab">
-                                    &nbsp;
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-row mt-0">
-                            <span class="col-lg-1"></span>
-                            <ul class="list-group col-lg-11" role="tablist">
-                                <div id="entriesList" class="collapse scrollable show" role="tabpanel" data-parent="#userEntries">
-                                </div>
-                            </ul>
-                        </div>
-
-                    </form>
-
-                    <span class="my-5">
-                    <hr class="my-5 rounded">
-                    <span class="my-5">
-
-                    <!-- ProveIt -->
-                    <h4 class="text-center mt-5">Prove It</h4>
-                    <form>
-                        <div class="form-row">
-                            <div class="form-group col-lg-5">
-                                <div class="input-group">
-                                    <div class="input-group-addon">Address</div>
-                                    <input type="text" class="form-control" id="entryInformationAddress" placeholder="0x...">
-                                </div>
-                            </div>
-                            <div class="form-group col-lg-7">
-                                <div class="input-group" id="entrySelectorDiv">
-                                    <div class="input-group-btn">
-                                        <button id="entryType" type="button" class="btn btn-secondary dropdown-toggle input-group-addon" data-toggle="dropdown">Entry Hash</button>
-                                        <div class="dropdown-menu" id="entryToggle">
-                                            <button class="dropdown-item active" type="button">Entry Hash</button>
-                                            <button class="dropdown-item" type="button">Text</button>
-                                            <button class="dropdown-item" type="button">File</button>
-                                        </div>
-                                    </div>
-                                    <label class="custom-file col-lg entryFile">
-                                        <input type="file" id="entryInformationEntry" class="custom-file-input">
-                                        <span class="custom-file-control rounded-right"></span>
-                                    </label>
-                                    <input type="text" class="form-control entryText" id="entryInformationEntry" placeholder="0x...">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group col-lg-1">
-                                <button type="button" class="h-100 form-control btn btn-outline-primary nofocus" id="entryInformationSubmit">ProveIt</button>
-                            </div>
-                            <div class="form-group col-lg-11 mb-0 text-center">
-                                <div class="alert alert-dark noselect" id="entryInformation" role="alert">
-                                    &nbsp;
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="tab-pane fade text-center" id="submit" role="tabpanel"><p class="mt-5">Submission to ProveIt via <a target="_blank" class="nounderline" href="https://metamask.io/">MetaMask</a> is coming soon.</p></div>
-                <div class="tab-pane fade text-center" id="about" role="tabpanel"><p class="mt-5">For more information on ProveIt, visit our <a target="_blank" class="nounderline" href="https://github.com/NoahZinsmeister/ProveIt">Github</a>.</p></div>
-            </div>
-        </div>
-    </main>
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container-fluid text-right">
-          <button id="web3Button" type="button" class="btn btn-outline-danger nofocus" data-toggle="tooltip" data-placement="left" title="No Web3 provider detected. Consider installing MetaMask.">
-            Web3
-          </button>
       </div>
-    </footer>
+    </div>
+
+    <!-- Jumbotron -->
+    <div class="jumbotron">
+      <div class="container">
+        <h1 class="display-2">Pr⟠veIt</h1>
+        <p class="lead">Proof of historical data possession on the <a target="_blank" class="nounderline" href="https://www.ethereum.org/">Ethereum</a> blockchain</p>
+      </div>
+    </div>
+
+    <!-- Nav bar -->
+    <div class="container">
+      <ul class="nav nav-tabs nav-fill nav-justified h2" id="navTabs" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" id="read-tab" data-toggle="tab" href="#read" role="tab">Read</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="submit-tab" data-toggle="tab" href="#submit" role="tab">Submit</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="about-tab" data-toggle="tab" href="#about" role="tab">About</a>
+        </li>
+      </ul>
+      <div class="tab-content" id="navTabsContent">
+        <!-- Read tab -->
+        <div class="tab-pane fade show active" id="read" role="tabpanel">
+          <div class="col mt-5 text-center">
+            <a class="nounderline h4" data-toggle="collapse" href="#registeredUsersAddresses" role="tab">Registered Users <span id="usersNumber" class="badge badge-primary badge-pill"></span></a>
+          </div>
+          <!-- Entry Browser -->
+          <ul class="list-group mt-3 scrollable" id="accordionUsers" role="tablist">
+            <div id="registeredUsersAddresses" class="collapse show" role="tabpanel">
+              <ul id="masterUserParent" class="list-group">
+
+              </ul>
+            </div>
+          </ul>
+
+          <span class="my-5"></span>
+
+          <!-- ProveIt -->
+          <h4 class="text-center mt-5">Prove It</h4>
+          <form>
+            <div class="row">
+              <div class="form-group col-lg-5">
+                <div class="input-group">
+                  <div class="input-group-addon">Address</div>
+                  <input type="text" class="form-control" id="entryInformationAddress" placeholder="0x...">
+                </div>
+              </div>
+              <div class="form-group col-lg-7">
+                <div class="input-group" id="entrySelectorDiv">
+                  <div class="input-group-btn">
+                    <button id="entryType" type="button" class="btn btn-secondary dropdown-toggle input-group-addon" data-toggle="dropdown">Entry Hash</button>
+                    <div class="dropdown-menu" id="entryToggle">
+                      <button class="dropdown-item active" type="button">Entry Hash</button>
+                      <button class="dropdown-item" type="button">Text</button>
+                      <button class="dropdown-item" type="button">File</button>
+                    </div>
+                  </div>
+                  <label class="custom-file col-lg entryFile">
+                    <input type="file" id="entryInformationFile" class="custom-file-input">
+                    <span class="custom-file-control rounded-right"></span>
+                  </label>
+                  <input type="text" class="form-control entryText" id="entryInformationText" placeholder="0x...">
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="form-group col-lg-1">
+                <button type="button" class="h-100 btn btn-outline-primary nofocus" id="entryInformationSubmit">ProveIt</button>
+              </div>
+              <div class="form-group col-lg-11 mb-0 text-center">
+                <div class="alert alert-dark noselect" id="entryInformation" role="alert">
+                  &nbsp;
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="tab-pane fade text-center" id="submit" role="tabpanel"><p class="mt-5">Submission to ProveIt via <a target="_blank" class="nounderline" href="https://metamask.io/">MetaMask</a> is coming soon.</p></div>
+        <div class="tab-pane fade text-center" id="about" role="tabpanel"><p class="mt-5">For more information on ProveIt, visit our <a target="_blank" class="nounderline" href="https://github.com/NoahZinsmeister/ProveIt">Github</a>.</p></div>
+      </div>
+    </div>
+  </main>
+  <!-- Footer -->
+  <footer class="footer clearfix container-fluid">
+    <div class="d-flex justify-content-between">
+      <div class="noselect">
+        &nbsp;
+      </div>
+      <div>
+        <button id="web3Button" type="button" class="my-auto btn btn-outline-danger nofocus" data-toggle="tooltip" data-placement="left" data-trigger="hover" title="No Web3 provider detected. Consider installing MetaMask.">
+          Web3
+        </button>
+      </div>
+    </div>
+  </footer>
+
+
 </body>
 </html>

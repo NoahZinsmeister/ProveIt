@@ -1,144 +1,175 @@
-"use strict";
-// namespace for non-DOM dependent functions
-var helper = {
-    web3: false,
-    sleep: function(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    },
-    hexFormat: function (string) {
-        return "0x" + string
-    },
-    parseFile: function (file, options) {
-        // credit to alediaferia on Github for most of this code!
-        // Valid options are:
-        // - errorCallback:
-        // an optional function that accepts an object of type FileReader.error
-        // - chunkCallback:
-        // a function that accepts the read chunk as its first argument.
-        // the second argument is an in that represents the fraction of the file
-        // that has cumulatively been loaded. if binary option is set to true,
-        // this function will receive an instance of ArrayBuffer, otherwise a String
-        // - finishedCallback:
-        // an optional function invoked as soon as the whole file has been read successfully
-        // - binary:
-        // If true chunks will be read through FileReader.readAsArrayBuffer
-        // otherwise as FileReader.readAsText. Default is true
-        // - bytesPerChunk:
-        // The chunk size to be used, in bytes. Default is .25M
-        // - singleChunk:
-        // Whether to read in file as a single chunk. Default is false, overrides bytesPerChunk
+/*jshint esversion: 6 */
+var helperNamespace = window.helperNamespace || {};
+// add shared stuff to namespace
+helperNamespace.web3 = false;
+helperNamespace.sleep = function(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+};
+helperNamespace.hexFormat = function (string) {
+    return "0x" + string;
+};
+helperNamespace.parseFile = function (file, opts) {
+    // credit to alediaferia on Github for most of this code!
+    // - errorCallback:
+    // - chunkCallback:
+    // - finishedCallback:
+    // - binary:
+    // - bytesPerChunk:
+    // - singleChunk:
+    var defaulter = function(name, _default) {return name in options ? options[name] : _default;};
+    var options = typeof opts === 'undefined' ? {} : opts;
+    var errorCallback = defaulter('errorCallback', function() {});
+    var chunkCallback = defaulter('chunkCallback', function() {});
+    var finishedCallback = defaulter('finishedCallback', function() {});
+    var binary = defaulter('binary', true);
+    var bytesPerChunk = defaulter('binary', 2^8 * 2^10);
+    var singleChunk = defaulter('binary', false);
 
-        var defaulter = function(name, _default) {return name in options ? options[name] : _default};
-        var options = typeof options === 'undefined' ? {} : options;
-        var errorCallback = defaulter('errorCallback', function() {});
-        var chunkCallback = defaulter('chunkCallback', function() {});
-        var finishedCallback = defaulter('finishedCallback', function() {});
-        var binary = defaulter('binary', true);
-        var bytesPerChunk = defaulter('binary', 2**8 * 2**10);
-        var singleChunk = defaulter('binary', false);
-
-        var fileSize = file.size;
-        if (singleChunk) {
-            bytesPerChunk = fileSize;
-        }
-        var offset = 0;
-
-        var onLoadHandler = function(event) {
-            if (event.target.error) {
-                errorCallback(event.target.error);
-                return;
-            } else {
-                offset += event.total;
-                // process current chunk
-                chunkCallback(event.target.result, Math.round(offset / fileSize * 100));
-                if (offset < fileSize) {
-                    // need to read another chunk
-                    readChunk();
-                } else {
-                    // finished reading all chunks
-                    finishedCallback();
-                    return;
-                }
-            }
-        }
-
-        var readChunk = function() {
-            var blob = file.slice(offset, bytesPerChunk + offset);
-            var reader = new FileReader();
-            reader.onload = onLoadHandler;
-            if (binary) {
-                reader.readAsArrayBuffer(blob);
-            } else {
-                reader.readAsText(blob);
-            }
-        }
-        readChunk();
+    var fileSize = file.size;
+    if (singleChunk) {
+        bytesPerChunk = fileSize;
     }
+    var offset = 0;
+
+    var onLoadHandler = function(event) {
+        if (event.target.error) {
+            errorCallback(event.target.error);
+            return;
+        } else {
+            offset += event.total;
+            // process current chunk
+            chunkCallback(event.target.result, Math.round(offset / fileSize * 100));
+            if (offset < fileSize) {
+                // need to read another chunk
+                readChunk();
+            } else {
+                // finished reading all chunks
+                finishedCallback();
+                return;
+            }
+        }
+    };
+
+    var readChunk = function() {
+        var blob = file.slice(offset, bytesPerChunk + offset);
+        var reader = new FileReader();
+        reader.onload = onLoadHandler;
+        if (binary) {
+            reader.readAsArrayBuffer(blob);
+        } else {
+            reader.readAsText(blob);
+        }
+    };
+    readChunk();
 };
 
 // DOM-dependent stuff
 $(function() {
     // callback functions
-    function registeredUsers() {
-        var Prover = helper.contracts.Prover;
 
-        Prover.registeredUsers.call(function (error, users) {
+    // things to do when a list-group-item child of masterUserParent is clicked:
+    // 1) add content
+    // 2) (remove these from all siblings also) make it active
+
+    function autoPopulate() {
+        function userEntry(address, name) {
+            var out=`
+            <div class="list-group-item d-flex justify-content-between cursor-pointer z-up children-noprop" role="tab">
+                <alert class="alert alert-light h-100 my-auto cursor-auto">
+                    <a target="_blank" href="https://etherscan.io/address/${address}" class="my-auto nounderline">${address}</a>
+                    <br><small><a target="_blank" href="https://etherscan.io/enslookup?q=${name}" class="my-auto nounderline">${name}</a></small>
+                </alert>
+                <button type="button" class="btn btn-light nofocus my-auto copyable cursor-pointer" data-clipboard-text="${address}">Copy</button>
+            </div>
+            <div role="tablist">
+                <div class="collapse" role="tabpanel">
+                </div>
+            </div>`;
+            return out;
+        }
+
+        helperNamespace.Prover.registeredUsers.call(function(error, users) {
             if (error) {
                 console.log(error);
             } else {
-                var itemHTML = '<li class="list-group-item copyable"></li>';
-                for (let i=0; i < users.length; i++) {
-                    $("#registeredUsersAddresses").append(itemHTML);
-                }
-                // add addresses
-                $('#registeredUsersAddresses li').each(function (index) {
-                    $(this).text(users[index]);
-                });
+                //var ENSNames = [""];
                 // update badge
-                $("#registeredUsersNumber").html(users.length);
+                $("#usersNumber").html(users.length);
+                // populate users
+                let entries = [];
+                for (let i=0; i < users.length; i++) {
+                    //entries.push(userEntry(users[i], ENSNames[i]));
+                    entries.push(userEntry(users[i], ""));
+                }
+                $("#masterUserParent").html(entries.join(""));
                 // initialize tooltips
                 initializeCopyables();
+                // set the noprop click listener
+                $('.children-noprop').on("click", noPropListener);
+                // fix the border on the bottom-most entry
+                $(".list-group-item[role='tab']").last().addClass("bottom-border");
             }
         });
     }
-    // export to helper so that we can autopopulate
-    helper.registeredUsers = registeredUsers;
+    // export so that we can potentially autopopulate on window load
+    helperNamespace.autoPopulate = autoPopulate;
 
-    function userEntries(event) {
-        var Prover = helper.contracts.Prover;
-        var address = $("#userEntriesAddress").val();
+    function noPropListener(event) {
+        // if the click was on a child element, pass
+        if ($(this).prop("tagName") !== $(event.target).prop("tagName")) {
+        } else {
+            collapser = $(this).next().children();
+            // click on main element, check if populated and toggle
+            if ($(this).next().children().children().length == 0) {
+                populateEntries(collapser);
+            }
+            $("#masterUserParent").find(".collapse[role='tabpanel']").removeClass("active");
+            $("#masterUserParent").find(".collapse[role='tabpanel']").collapse("hide");
+            //$(this).addClass("active");
+            collapser.collapse("toggle");
+        }
+    }
 
-        Prover.userEntries.call(address, function (error, entries) {
+    function populateEntries(addressNode) {
+        function entryList(entry) {
+            var out =`
+            <div class="list-group-item d-flex justify-content-between border-bottom-0 rounded-0">
+                <span class="h-100 my-auto">
+                    ${entry}
+                </span>
+                <button type="button" class="btn btn-light nofocus my-auto copyable cursor-pointer" data-clipboard-text="${entry}">Copy</button>
+            </div>`;
+            return out;
+        }
+        var address = $(addressNode).parents().first().prev().find("button").attr("data-clipboard-text");
+        helperNamespace.Prover.userEntries.call(address, function (error, entries) {
             $('#entriesList').html("");
             if (error) {
-                console.log(error);
-                $("#userEntries").html("&nbsp;");
+               console.log(error);
             } else {
-                if (entries.length >= 1) {
-                    $("#userEntries").html(entries.length + " " + (entries.length == 1 ? "entry" : "entries") + " found");
-                    $("#userEntries").removeClass("noselect alert-dark alert-danger alert-success");
-                    $("#userEntries").addClass("alert-success");
-                    // add list items
-                    var itemHTML = '<li class="list-group-item copyable"></li>';
-                    for (let i=0; i < entries.length; i++) {
-                        $("#entriesList").append(itemHTML);
-                    }
-                    // add addresses
-                    $('#entriesList li').each(function (index) {
-                        $(this).text(entries[index]);
-                    });
-                    // initialize tooltips
-                    initializeCopyables();
-                } else {
-                    $("#userEntries").removeClass("alert-dark alert-danger alert-success");
-                    $("#userEntries").addClass("alert-danger");
-                    $("#userEntries").html("No entries found.");
+                var out = [];
+                // beginning
+                out.push(`
+                <div class="row">
+                    <div class="col-sm-1"></div>
+                    <ul class="col-sm-11 list-group">`);
+                for (let i = 0; i < entries.length; i++) {
+                    out.push(entryList(entries[i]));
                 }
+                // end
+                out.push(`</ul></div>`);
+                addressNode.html(out.join(""));
+                $(".list-group-item").last().addClass("bottom-border");
+                // initialize tooltips
+                initializeCopyables();
+                //entries.length == 1
             }
         });
     }
 
+    /* jshint ignore:start */
     async function entryInformation() {
+        /* jshint ignore:end */
         stateChange("default", "&nbsp;");
         function stateChange(state, text) {
             var element = $("#entryInformation");
@@ -169,11 +200,12 @@ $(function() {
             var file = fileList[0];
             $("#progressBar").style = "width: 0%";
             $("#fileHashModal").modal('show');
+            /* jshint ignore:start */
             hash = await hashFile(file);
+            /* jshint ignore:end */
         }
-        var Prover = helper.contracts.Prover;
 
-        Prover.entryInformation.call(address, hash, function (error, entryInfo) {
+        helperNamespace.Prover.entryInformation.call(address, hash, function (error, entryInfo) {
             if (error) {
                 console.log(error);
             } else {
@@ -191,70 +223,97 @@ $(function() {
                 }
             }
         });
+        /* jshint ignore:start */
     }
+    /* jshint ignore:end */
 
     function hashMessage(message) {
         var hashObject = keccak256.create();
         hashObject.update(message);
-        return helper.hexFormat(hashObject.hex());
+        return helperNamespace.hexFormat(hashObject.hex());
     }
 
+    /* jshint ignore:start */
     async function hashFile(file) {
+        /* jshint ignore:end */
         var hashObject = keccak256.create();
         var success = false;
 
         var errorCallback = function(error) {
             console.log(error);
             $("#fileHashModal").modal('hide');
-        }
+        };
         var chunkCallback = function(chunk, percentDone) {
             hashObject.update(chunk);
             $("#progressBar").attr("style", "width: " + percentDone.toString() + "%");
-        }
+        };
         var finishedCallback = function() {
             success = true;
             $("#fileHashModal").modal('hide');
-        }
-        helper.parseFile(file, {
+        };
+        /* jshint ignore:start */
+        helperNamespace.parseFile(file, {
             "errorCallback": errorCallback,
             "chunkCallback": chunkCallback,
             "finishedCallback": finishedCallback
         });
+        /* jshint ignore:end */
         // await until the modal closes
         while (($("#fileHashModal").data('bs.modal') || {})._isShown) {
-            await helper.sleep(100);
+            /* jshint ignore:start */
+            await helperNamespace.sleep(100);
+            /* jshint ignore:end */
         }
         if (success) {
-            return helper.hexFormat(hashObject.hex());
+            return helperNamespace.hexFormat(hashObject.hex());
         }
+        /* jshint ignore:start */
     }
+    /* jshint ignore:end */
 
     // add event listeners
-    $("#userEntriesSubmit")[0].addEventListener("click", userEntries);
     $("#entryInformationSubmit")[0].addEventListener("click", entryInformation);
 
     // add clipboard functionality
     var clipboard = new Clipboard('.copyable', {
         text: function(trigger) {
-            return trigger.innerText;
+            return $(trigger).attr("data-clipboard-text");
+        }
+    });
+
+    function changeTooltipTitle(tooltip, text) {
+        var originalTitle = $(tooltip).attr("data-original-title");
+        if (typeof originalTitle !== typeof undefined && originalTitle !== false) {
+            $(tooltip).tooltip("hide")
+            .attr('data-original-title', text);
+        } else {
+            $(tooltip).attr('title', text);
+        }
     }
-    });
-    clipboard.on('success', function(event) {
-        console.log(event.trigger);
-        $(event.trigger).tooltip('hide')
-          .attr('data-original-title', "Copied!")
-          .tooltip('show');
-        // change all others to not copied
-        $('.copyable').not($(event.trigger))
-        .tooltip('hide')
-          .attr('data-original-title', "Copy to clipboard.");
-    });
-    clipboard.on('error', function(e) {
-        $(event.trigger).tooltip('hide')
-          .attr('data-original-title', "An error occured, please copy manually.")
-          .tooltip('show');
-        $(event.trigger).attr("title", ".");
-    });
+
+
+    function clipboardSuccess(event) {
+        changeTooltipTitle(event.trigger, "Copied!");
+        $(event.trigger).one('shown.bs.tooltip', function () {
+            $(this).tooltip("disable");
+        });
+        $(event.trigger).tooltip("enable").tooltip("show");
+    }
+    function clipboardError(event) {
+        changeTooltipTitle(event.trigger, "An error occured, please copy manually.");
+        $(event.trigger).one('shown.bs.tooltip', function () {
+            $(this).tooltip("disable");
+        });
+        $(event.trigger).tooltip("enable").tooltip("show");
+    }
+    clipboard.on('success', clipboardSuccess);
+    clipboard.on('error', clipboardError);
+
+    function initializeCopyables() {
+        $('.copyable').attr("data-toggle", "tooltip")
+        .attr("data-trigger", "hover")
+        .attr("data-placement", "right");
+    }
 
     $("#entryToggle button").on('click', function (event) {
         $(this).addClass('active').siblings().removeClass('active');
@@ -266,57 +325,56 @@ $(function() {
         // update the addon text
         $("#entryType").html(selection);
         // hide both
-        $(".entryFile").hide()
-        $(".entryText").hide()
+        $(".entryFile").hide();
+        $(".entryText").hide();
         // unhide the right one
         if (selection != "File") {
             $(".entryText").show();
             $(".entryText").attr("placeholder", placeholders[selection]);
             $(".entryText").val("");
         } else {
-            $(".entryFile").show()
+            $(".entryFile").show();
             $(".entryFile").val("");
         }
     });
-
-    // this is also tried on window load
-    if (helper.web3) {
-        registeredUsers();
-    }
 
     function fileUploadListener () {
         var fileName = $(this).val().split("\\").pop();
         $(this).next('.custom-file-control').addClass("selected").html(fileName);
     }
+
     // hide and add event listener to file uploader
+    $(".entryFile").hide();
     $(".entryFile").children("input").on('change', fileUploadListener);
-    $(".entryFile").hide()
 
     $(function () {
-      $('[data-toggle="tooltip"]').tooltip()
-    })
-    function initializeCopyables() {
-        $('.copyable').attr("data-toggle", "tooltip")
-        .attr("data-placement", "right")
-        .attr("title", "Copy to clipboard.").tooltip()
-      }
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+
+    // this is also tried on window load
+    if (!helperNamespace.autoPopulated & helperNamespace.web3) {
+        autoPopulate();
+        helperNamespace.autoPopulated = true;
+    }
 });
 
-// web3 initialization
 $(window).on("load", function () {
+    // web3 initialization
     function initializeWeb3() {
         if (typeof web3 !== 'undefined') {
             window.web3 = new Web3(web3.currentProvider);
-            helper.web3 = true;
         } else {
             window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/zKmHyEn4VwJ4in3cptiL"));
-            helper.web3 = true;
         }
+        helperNamespace.web3 = true;
         $("#web3Button").attr("title", "Web3 Provider detected: " + web3.currentProvider.constructor.name);
         $("#web3Button").removeClass("btn-outline-danger");
         $("#web3Button").addClass("btn-outline-success");
     }
-    function getContracts() {
+    initializeWeb3();
+
+    // contract initialization after web3
+    function initializeContracts() {
         var addresses = {
             Hash: "0xca260ffffb0270ee07ec6892fa9d44f040454e4d",
             Prover: "0x117ca39dffc4da6fb3af6145dfff246830637fe2"
@@ -325,15 +383,14 @@ $(window).on("load", function () {
             Hash: [{"constant":true,"inputs":[{"name":"dataString","type":"string"}],"name":"hashString","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"pure","type":"function"},{"constant":true,"inputs":[{"name":"dataBytes","type":"bytes"}],"name":"hashBytes","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"pure","type":"function"},{"constant":false,"inputs":[],"name":"selfDestruct","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":false,"stateMutability":"nonpayable","type":"fallback"}],
             Prover: [{"constant":true,"inputs":[{"name":"target","type":"address"},{"name":"dataHash","type":"bytes32"}],"name":"entryInformation","outputs":[{"name":"proved","type":"bool"},{"name":"time","type":"uint256"},{"name":"staked","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"dataHash","type":"bytes32"}],"name":"addEntry","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"registeredUsers","outputs":[{"name":"unique_addresses","type":"address[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"selfDestruct","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"target","type":"address"}],"name":"userEntries","outputs":[{"name":"entries","type":"bytes32[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"dataHash","type":"bytes32"}],"name":"deleteEntry","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":false,"stateMutability":"nonpayable","type":"fallback"}]
         };
-        return {
-            Hash: web3.eth.contract(abis.Hash).at(addresses.Hash),
-            Prover: web3.eth.contract(abis.Prover).at(addresses.Prover)
-        }
+        helperNamespace.Hash = web3.eth.contract(abis.Hash).at(addresses.Hash);
+        helperNamespace.Prover = web3.eth.contract(abis.Prover).at(addresses.Prover);
     }
-    initializeWeb3();
-    helper.contracts = getContracts()
+    initializeContracts();
+
     // this is also tried at the end of document ready
-    if ("registeredUsers" in helper) {
-        helper.registeredUsers();
+    if (!helperNamespace.autoPopulated & "autoPopulate" in helperNamespace) {
+        helperNamespace.autoPopulate();
+        helperNamespace.autoPopulated = true;
     }
-})
+});

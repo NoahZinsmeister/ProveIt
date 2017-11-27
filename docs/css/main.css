@@ -1,3 +1,5 @@
+/*csslint important: false*/
+
 .nounderline:hover {
     text-decoration: none;
 }
@@ -9,20 +11,25 @@
     user-select: none;
 }
 
-.nav-link.active {
+.nav-link .active {
     color: #212529 !important;
 }
 
-#userEntries.alert-success {
+/* nitpicky, but fixes border when expanding an address */
+.z-up {
+    z-index: 2 !important;
+}
+
+.list-group> .list-group-item:not(.active):hover {
+    background-color: lightgrey !important;
+}
+
+.cursor-pointer {
     cursor: pointer !important;
 }
 
-hr {
-    border-width: 8px 0;
-}
-
-button {
-    cursor: pointer !important;
+.cursor-auto {
+    cursor: auto !important;
 }
 
 /* entry selector hover selection */
@@ -31,19 +38,34 @@ button {
     color: #f5f5f5;
     background-image: none;
 }
-
 .nofocus:focus {
     box-shadow: none !important;
 }
 
+.last-entry {
+    margin-bottom: -1px !important;
+}
+
+.bottom-border {
+    border-bottom: 1px solid lightgrey !important;
+    margin-bottom: 0 !important;
+}
+
+.bottom-border:hover {
+    border-bottom: 1px solid darkgrey !important;
+    margin-bottom: 0 !important;
+}
+
+
+
 /* fix file input box rounded corners bug */
 .rounded-right {
-    border-top-left-radius: 0rem!important;
-    border-bottom-left-radius: 0rem!important;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
 }
 
 /* add filename to file input box */
-.custom-file-control.selected::after {
+.custom-file-control .selected ::after {
   content: "" !important;
 }
 .custom-file {
@@ -53,19 +75,19 @@ button {
   white-space: nowrap !important;
 }
 
+/* scrollable anythings */
 .scrollable {
-    max-height: 200px;
+    max-height: 500px;
     overflow-x: hidden;
     overflow-y: auto;
 }
 .collapsing {
-    max-height: 200px;
+    max-height: 500px;
     overflow-x: hidden;
     overflow-y: hidden;
 }
 
-/* Sticky footer styles
--------------------------------------------------- */
+/* Sticky footer styles */
 html {
   position: relative;
   min-height: 100%;
@@ -81,3 +103,5 @@ body {
   line-height: 60px; /* Vertically center the text there */
   background-color: #f5f5f5;
 }
+
+/*csslint important: true*/
