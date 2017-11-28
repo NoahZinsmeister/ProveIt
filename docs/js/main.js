@@ -242,6 +242,7 @@ $(function() {
                         .addClass("btn-success")
                         .html("Close");
                     hash = hashResolved;
+                    console.log(hash);
                     parseResult();
                 }).catch(error => {
                     $("#fileHashModal").modal('hide');
