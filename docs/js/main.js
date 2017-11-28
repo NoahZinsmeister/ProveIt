@@ -5,25 +5,18 @@ helperNamespace.web3 = false;
 helperNamespace.sleep = function(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 };
-helperNamespace.hexFormat = function (string) {
-    return "0x" + string;
-};
 helperNamespace.parseFile = function (file, opts) {
-    // credit to alediaferia on Github for most of this code!
-    // - errorCallback:
-    // - chunkCallback:
-    // - finishedCallback:
-    // - binary:
-    // - bytesPerChunk:
-    // - singleChunk:
-    var defaulter = function(name, _default) {return name in options ? options[name] : _default;};
+    // credit to alediaferia on Github for most of this code
+    // callback params: errorCallback, chunkCallback, finishedCallback:
+    // other params: binary (true | false), bytesPerChunk | singleChunk
     var options = typeof opts === 'undefined' ? {} : opts;
+    var defaulter = function(name, _default) {return name in options ? options[name] : _default;};
     var errorCallback = defaulter('errorCallback', function() {});
     var chunkCallback = defaulter('chunkCallback', function() {});
     var finishedCallback = defaulter('finishedCallback', function() {});
     var binary = defaulter('binary', true);
-    var bytesPerChunk = defaulter('binary', 2^8 * 2^10);
-    var singleChunk = defaulter('binary', false);
+    var bytesPerChunk = defaulter('bytesPerChunk', Math.pow(2, 8) * Math.pow(2, 10)); //.25 megabytes
+    var singleChunk = defaulter('singleChunk', false);
 
     var fileSize = file.size;
     if (singleChunk) {
@@ -65,257 +58,279 @@ helperNamespace.parseFile = function (file, opts) {
 
 // DOM-dependent stuff
 $(function() {
-    // callback functions
-
-    // things to do when a list-group-item child of masterUserParent is clicked:
-    // 1) add content
-    // 2) (remove these from all siblings also) make it active
+    function ENSName (address) {
+        // is there a security concern here? can anyone claim a reverse?
+        resolver = helperNamespace.ens.reverse(address);
+        return resolver.name();
+    }
 
     function autoPopulate() {
+        function changeBadge(text, badge) {
+            $("#usersBadge")
+                .html(text)
+                .removeClass("badge-primary badge-warning badge-error")
+                .addClass(badge);
+        }
         function userEntry(address, name) {
             var out=`
-            <div class="list-group-item d-flex justify-content-between cursor-pointer z-up children-noprop" role="tab">
+            <div class="list-group-item d-flex justify-content-between" role="tab">
                 <alert class="alert alert-light h-100 my-auto cursor-auto">
                     <a target="_blank" href="https://etherscan.io/address/${address}" class="my-auto nounderline">${address}</a>
                     <br><small><a target="_blank" href="https://etherscan.io/enslookup?q=${name}" class="my-auto nounderline">${name}</a></small>
                 </alert>
-                <button type="button" class="btn btn-light nofocus my-auto copyable cursor-pointer" data-clipboard-text="${address}">Copy</button>
-            </div>
-            <div role="tablist">
-                <div class="collapse" role="tabpanel">
-                </div>
+                <button type="button" class="btn btn-primary nofocus my-auto copyable cursor-pointer" data-clipboard-text="${address}">Copy</button>
             </div>`;
             return out;
         }
+        function updateUsers (addresses, names) {
+            var entries = [];
+            for (let i=0; i < addresses.length; i++) {
+                entries.push(userEntry(addresses[i], names[i]));
+            }
+            // populate users
+            $("#masterUserParent").html(entries.join(""));
+            // initialize copyables
+            initializeCopyables($("#masterUserParent"));
+            // change badge
+            changeBadge(addresses.length, "badge-primary");
+            $("#registeredUsersAddresses").collapse("show");
+        }
 
-        helperNamespace.Prover.registeredUsers.call(function(error, users) {
+        changeBadge("Loading...", "badge-warning");
+        helperNamespace.Prover.registeredUsers.call(function (error, users) {
             if (error) {
+                changeBadge("Error", "badge-danger");
                 console.log(error);
             } else {
-                //var ENSNames = [""];
-                // update badge
-                $("#usersNumber").html(users.length);
-                // populate users
-                let entries = [];
-                for (let i=0; i < users.length; i++) {
-                    //entries.push(userEntry(users[i], ENSNames[i]));
-                    entries.push(userEntry(users[i], ""));
-                }
-                $("#masterUserParent").html(entries.join(""));
-                // initialize tooltips
-                initializeCopyables();
-                // set the noprop click listener
-                $('.children-noprop').on("click", noPropListener);
-                // fix the border on the bottom-most entry
-                $(".list-group-item[role='tab']").last().addClass("bottom-border");
+                var usersChecksummed = users.map(x => web3.toChecksumAddress(x));
+                Promise.all(users.map(x => {
+                    // if any address returns an error, simply return a blank
+                    return ENSName(x).catch(ENSError => {
+                        return "";
+                    });
+                }))
+                    .then(ENSNamesResolved => updateUsers(usersChecksummed, ENSNamesResolved))
+                    .catch(error => {
+                        changeBadge("Error", "badge-danger");
+                        console.log(error);
+                    });
             }
         });
     }
-    // export so that we can potentially autopopulate on window load
+    // export so that we can autopopulate ASAP
     helperNamespace.autoPopulate = autoPopulate;
 
-    function noPropListener(event) {
-        // if the click was on a child element, pass
-        if ($(this).prop("tagName") !== $(event.target).prop("tagName")) {
-        } else {
-            collapser = $(this).next().children();
-            // click on main element, check if populated and toggle
-            if ($(this).next().children().children().length == 0) {
-                populateEntries(collapser);
-            }
-            $("#masterUserParent").find(".collapse[role='tabpanel']").removeClass("active");
-            $("#masterUserParent").find(".collapse[role='tabpanel']").collapse("hide");
-            //$(this).addClass("active");
-            collapser.collapse("toggle");
-        }
-    }
+    function populateEntries (event) {
+        // form validation
+        var address = $("#userEntriesAddress").val();
 
-    function populateEntries(addressNode) {
-        function entryList(entry) {
+        if (! web3.isAddress(address)) {
+            event.preventDefault();
+            event.stopPropagation();
+            $("#userEntriesAddress").addClass('is-invalid');
+            $("#userEntries").html("");
+            return;
+        } else {
+            $("#userEntriesAddress").removeClass("is-invalid").addClass('is-valid');
+        }
+
+        function entryList (entry) {
             var out =`
-            <div class="list-group-item d-flex justify-content-between border-bottom-0 rounded-0">
-                <span class="h-100 my-auto">
-                    ${entry}
-                </span>
-                <button type="button" class="btn btn-light nofocus my-auto copyable cursor-pointer" data-clipboard-text="${entry}">Copy</button>
-            </div>`;
+            <div class="list-group-item d-flex justify-content-between">
+              <alert class="my-auto alert" role="alert">
+                ${entry}
+              </alert>
+              <button type="button" class="btn btn-primary nofocus my-auto copyable cursor-pointer" data-clipboard-text="${entry}">Copy</button>
+            </div>
+            `;
             return out;
         }
-        var address = $(addressNode).parents().first().prev().find("button").attr("data-clipboard-text");
+        function errorEntries (text) {
+            var out =`
+            <div class="alert alert-danger noselect text-center" role="alert">
+              ${text}
+            </div>
+            `;
+            return out;
+        }
+
         helperNamespace.Prover.userEntries.call(address, function (error, entries) {
-            $('#entriesList').html("");
             if (error) {
-               console.log(error);
+                $("#userEntries").html(noEntries("Error."));
+                console.log(error);
+                return;
             } else {
-                var out = [];
-                // beginning
-                out.push(`
-                <div class="row">
-                    <div class="col-sm-1"></div>
-                    <ul class="col-sm-11 list-group">`);
-                for (let i = 0; i < entries.length; i++) {
-                    out.push(entryList(entries[i]));
+                if (entries.length >= 1) {
+                    var out = [];
+                    for (let i=0; i < entries.length; i++) {
+                        out.push(entryList(entries[i]));
+                    }
+                    $("#userEntries").html(out.join(""));
+                    initializeCopyables($("#userEntries"));
+                } else {
+                    $("#userEntries").html(errorEntries("No entries found."));
                 }
-                // end
-                out.push(`</ul></div>`);
-                addressNode.html(out.join(""));
-                $(".list-group-item").last().addClass("bottom-border");
-                // initialize tooltips
-                initializeCopyables();
-                //entries.length == 1
             }
         });
     }
 
-    /* jshint ignore:start */
-    async function entryInformation() {
-        /* jshint ignore:end */
-        stateChange("default", "&nbsp;");
-        function stateChange(state, text) {
-            var element = $("#entryInformation");
-            element.removeClass("alert-dark alert-danger alert-success noselect");
-            if (state == "proven") {
-                element.addClass('alert-success copyable');
-                initializeCopyables();
-            } else if (state == "unproven") {
-                element.addClass('alert-danger noselect');
-            } else if (state == "default") {
-                element.addClass('alert-dark noselect');
+    function entryInformation() {
+        function stateChange(text, state) {
+            var classes;
+            switch (state) {
+                case "proven":
+                    classes = "alert-success";
+                    break;
+                case "error":
+                    classes = "alert-danger noselect";
+                    break;
+                case "default":
+                    classes = "alert-dark noselect";
+                    break;
             }
-            element.html(text);
+
+            $("#entryInformation")
+                .removeClass("alert-dark alert-danger alert-success noselect")
+                .addClass(classes)
+                .html(text);
         }
+
+        // form validation
         var address = $("#entryInformationAddress").val();
         var entryType = $("#entryType").html();
-        var hash;
-        if (entryType == "Entry Hash") {
-            hash = $(".entryText").val();
-        } else if (entryType == "Text") {
-            hash = hashMessage($(".entryText").val());
-        } else if (entryType == "File") {
-            var fileList = $(".custom-file-input")[0].files;
-            if (fileList.length !== 1) {
-                console.log('Please select 1 and only 1 file.');
-                return;
-            }
-            var file = fileList[0];
-            $("#progressBar").style = "width: 0%";
-            $("#fileHashModal").modal('show');
-            /* jshint ignore:start */
-            hash = await hashFile(file);
-            /* jshint ignore:end */
+
+        function validHash() {
+            // TODO implement validity checks here.
+            // hash.substring(0, 2) == "0x" && hash.length == 34;
+            return true;
         }
 
-        helperNamespace.Prover.entryInformation.call(address, hash, function (error, entryInfo) {
-            if (error) {
-                console.log(error);
-            } else {
-                if (entryInfo[0]) {
-                    var date = new Date(entryInfo[1].toNumber() * 1000);
-                    var displayString = [];
-                    displayString.push("Submitted on");
-                    displayString.push(date.toLocaleString("en-US", {year: 'numeric', month: 'long', day: 'numeric'}));
-                    displayString.push("at");
-                    displayString.push(date.toLocaleString("en-US", {hour: "numeric", minute: "numeric"}));
-                    displayString.push("against " + web3.fromWei(entryInfo[2].toNumber(), "ether") + " ETH.");
-                    stateChange("proven", displayString.join(" "));
-                } else {
-                    stateChange("unproven", "Unproven.");
-                }
+        if (! (web3.isAddress(address) & validHash())) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (! web3.isAddress(address)) {
+                $("#entryInformationAddress").addClass('is-invalid');
             }
-        });
-        /* jshint ignore:start */
-    }
-    /* jshint ignore:end */
+            stateChange("&nbsp;", "default");
+            return;
+        } else {
+            $("#entryInformationAddress").removeClass("is-invalid").addClass('is-valid');
+        }
 
-    function hashMessage(message) {
-        var hashObject = keccak256.create();
-        hashObject.update(message);
-        return helperNamespace.hexFormat(hashObject.hex());
+        stateChange("Loading...", "default");
+
+        var hash;
+        switch (entryType) {
+            case "Entry Hash":
+                hash = $(".entryText").val();
+                parseResult();
+                break;
+            case "Text":
+                hash = hashText($(".entryText").val());
+                parseResult();
+                break;
+            case "File":
+                var fileList = $(".custom-file-input")[0].files;
+                if (fileList.length !== 1) {
+                    stateChange("Please select 1 and only 1 file.", "error");
+                    return;
+                }
+                var file = fileList[0];
+                hashFile(file).then(hashResolved => {
+                    $("#fileHashModalButton")
+                        .removeClass("btn-danger")
+                        .addClass("btn-success")
+                        .html("Close");
+                    hash = hashResolved;
+                    parseResult();
+                }).catch(error => {
+                    $("#fileHashModal").modal('hide');
+                    stateChange(error, "error");
+                    return;
+                });
+                break;
+        }
+
+        function parseResult () {
+            helperNamespace.Prover.entryInformation.call(address, hash, function (error, entryInfo) {
+                if (error) {
+                    stateChange("Error.", "error");
+                    console.log(error);
+                    return;
+                } else {
+                    if (entryInfo[0]) {
+                        var date = new Date(entryInfo[1].toNumber() * 1000);
+                        var displayString = [];
+                        displayString.push("Submitted on");
+                        displayString.push(date.toLocaleString("en-US", {
+                            timeZone: "UTC",
+                            hour12: false,
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'}));
+                        displayString.push("at");
+                        displayString.push(date.toLocaleString("en-US", {
+                            timeZone: "UTC",
+                            hour12: false,
+                            hour: "numeric",
+                            minute: "numeric",
+                            timeZoneName: "short"}));
+                        displayString.push("against " + web3.fromWei(entryInfo[2].toNumber(), "ether") + " ETH.");
+                        stateChange(displayString.join(" "), "proven");
+                    } else {
+                        stateChange("Unproven.", "error");
+                    }
+                }
+            });
+        }
     }
 
-    /* jshint ignore:start */
-    async function hashFile(file) {
-        /* jshint ignore:end */
-        var hashObject = keccak256.create();
-        var success = false;
+    function hashText(message) {
+        var hash = browserifyModules.keccak('keccak256').update(message).digest("hex");
+        return "0x" + hash;
+    }
+
+    function hashFile(file) {
+        var hashObject = browserifyModules.keccak('keccak256');
 
         var errorCallback = function(error) {
-            console.log(error);
-            $("#fileHashModal").modal('hide');
+            throw new Error(`File upload error.`);
         };
         var chunkCallback = function(chunk, percentDone) {
-            hashObject.update(chunk);
+            hashObject.update(browserifyModules.Buffer.from(chunk));
             $("#progressBar").attr("style", "width: " + percentDone.toString() + "%");
         };
         var finishedCallback = function() {
-            success = true;
-            $("#fileHashModal").modal('hide');
+            var event = new CustomEvent('hashed', {detail: "0x" + hashObject.digest("hex")});
+            $("#fileHashModal")[0].dispatchEvent(event);
         };
-        /* jshint ignore:start */
-        helperNamespace.parseFile(file, {
-            "errorCallback": errorCallback,
-            "chunkCallback": chunkCallback,
-            "finishedCallback": finishedCallback
+        // reset the modal
+        $("#progressBar").style = "width: 0%";
+        $("#fileHashModalButton")
+            .removeClass("btn-success")
+            .addClass("btn-danger")
+            .html("Cancel");
+
+        return new Promise((resolve, reject) => {
+            // add hashed listener to modal
+            $("#fileHashModal").one("hashed", function (event) {
+                resolve(event.detail);
+            });
+            // add event listener for modal close, which cancels the promise
+            $("#fileHashModal").one('hide.bs.modal', function (event) {
+                reject("File upload cancelled.");
+            });
+            $("#fileHashModal").modal('show');
+            // start parsing the file
+            helperNamespace.parseFile(file, {
+                "errorCallback": errorCallback,
+                "chunkCallback": chunkCallback,
+                "finishedCallback": finishedCallback
+            });
         });
-        /* jshint ignore:end */
-        // await until the modal closes
-        while (($("#fileHashModal").data('bs.modal') || {})._isShown) {
-            /* jshint ignore:start */
-            await helperNamespace.sleep(100);
-            /* jshint ignore:end */
-        }
-        if (success) {
-            return helperNamespace.hexFormat(hashObject.hex());
-        }
-        /* jshint ignore:start */
-    }
-    /* jshint ignore:end */
-
-    // add event listeners
-    $("#entryInformationSubmit")[0].addEventListener("click", entryInformation);
-
-    // add clipboard functionality
-    var clipboard = new Clipboard('.copyable', {
-        text: function(trigger) {
-            return $(trigger).attr("data-clipboard-text");
-        }
-    });
-
-    function changeTooltipTitle(tooltip, text) {
-        var originalTitle = $(tooltip).attr("data-original-title");
-        if (typeof originalTitle !== typeof undefined && originalTitle !== false) {
-            $(tooltip).tooltip("hide")
-            .attr('data-original-title', text);
-        } else {
-            $(tooltip).attr('title', text);
-        }
     }
 
-
-    function clipboardSuccess(event) {
-        changeTooltipTitle(event.trigger, "Copied!");
-        $(event.trigger).one('shown.bs.tooltip', function () {
-            $(this).tooltip("disable");
-        });
-        $(event.trigger).tooltip("enable").tooltip("show");
-    }
-    function clipboardError(event) {
-        changeTooltipTitle(event.trigger, "An error occured, please copy manually.");
-        $(event.trigger).one('shown.bs.tooltip', function () {
-            $(this).tooltip("disable");
-        });
-        $(event.trigger).tooltip("enable").tooltip("show");
-    }
-    clipboard.on('success', clipboardSuccess);
-    clipboard.on('error', clipboardError);
-
-    function initializeCopyables() {
-        $('.copyable').attr("data-toggle", "tooltip")
-        .attr("data-trigger", "hover")
-        .attr("data-placement", "right");
-    }
-
-    $("#entryToggle button").on('click', function (event) {
+    function inputToggle (event) {
         $(this).addClass('active').siblings().removeClass('active');
         var placeholders = {
             "Entry Hash": "0x...",
@@ -329,27 +344,74 @@ $(function() {
         $(".entryText").hide();
         // unhide the right one
         if (selection != "File") {
-            $(".entryText").show();
-            $(".entryText").attr("placeholder", placeholders[selection]);
-            $(".entryText").val("");
+            $(".entryText")
+                .show()
+                .attr("placeholder", placeholders[selection])
+                .val("");
         } else {
-            $(".entryFile").show();
-            $(".entryFile").val("");
+            $(".entryFile")
+                .show()
+                .val("");
         }
-    });
+    }
 
-    function fileUploadListener () {
+    function fileUploadListener (event) {
         var fileName = $(this).val().split("\\").pop();
         $(this).next('.custom-file-control').addClass("selected").html(fileName);
     }
+
+
+    // clipboard functionality
+    var clipboard = new Clipboard('.copyable', {
+        text: function(trigger) {
+            return $(trigger).attr("data-clipboard-text");
+        }
+    });
+    function changeTooltipTitle(tooltip, text) {
+        var originalTitle = $(tooltip).attr("data-original-title");
+        if (typeof originalTitle !== typeof undefined && originalTitle !== false) {
+            $(tooltip).tooltip("hide")
+            .attr('data-original-title', text);
+        } else {
+            $(tooltip).attr('title', text);
+        }
+    }
+    function clipboardSuccess (event) {
+        changeTooltipTitle(event.trigger, "Copied!");
+        $(event.trigger).one('shown.bs.tooltip', function () {
+            $(this).tooltip("disable");
+        });
+        $(event.trigger).tooltip("enable").tooltip("show");
+    }
+    function clipboardError (event) {
+        changeTooltipTitle(event.trigger, "An error occured, please copy manually.");
+        $(event.trigger).one('shown.bs.tooltip', function () {
+            $(this).tooltip("disable");
+        });
+        $(event.trigger).tooltip("enable").tooltip("show");
+    }
+    clipboard.on('success', clipboardSuccess);
+    clipboard.on('error', clipboardError);
+    function initializeCopyables (element) {
+        element
+            .find('.copyable')
+            .attr("data-toggle", "tooltip")
+            .attr("data-trigger", "hover")
+            .attr("data-placement", "right")
+            .tooltip({delay: {hide: 400}});
+    }
+
+    // add event listeners
+    $("#entryInformationSubmit").on("click", entryInformation);
+    $("#userEntriesSubmit").on("click", populateEntries);
+    $("#entryToggle button").on('click', inputToggle);
 
     // hide and add event listener to file uploader
     $(".entryFile").hide();
     $(".entryFile").children("input").on('change', fileUploadListener);
 
-    $(function () {
-        $('[data-toggle="tooltip"]').tooltip();
-    });
+    // initialize tooltips
+    $('[data-toggle="tooltip"]').tooltip();
 
     // this is also tried on window load
     if (!helperNamespace.autoPopulated & helperNamespace.web3) {
@@ -357,6 +419,7 @@ $(function() {
         helperNamespace.autoPopulated = true;
     }
 });
+
 
 $(window).on("load", function () {
     // web3 initialization
@@ -367,24 +430,29 @@ $(window).on("load", function () {
             window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/zKmHyEn4VwJ4in3cptiL"));
         }
         helperNamespace.web3 = true;
-        $("#web3Button").attr("title", "Web3 Provider detected: " + web3.currentProvider.constructor.name);
-        $("#web3Button").removeClass("btn-outline-danger");
-        $("#web3Button").addClass("btn-outline-success");
+        helperNamespace.ens = new browserifyModules.ENS(web3);
+        $("#web3Button")
+            .attr("title", "Web3 Provider detected: " + web3.currentProvider.constructor.name)
+            .removeClass("btn-outline-danger")
+            .addClass("btn-outline-success");
     }
     initializeWeb3();
 
     // contract initialization after web3
     function initializeContracts() {
-        var addresses = {
-            Hash: "0xca260ffffb0270ee07ec6892fa9d44f040454e4d",
-            Prover: "0x117ca39dffc4da6fb3af6145dfff246830637fe2"
+        var contracts = {
+            Hash: {
+                address: "0xca260ffffb0270ee07ec6892fa9d44f040454e4d",
+                abi: [{"constant":true,"inputs":[{"name":"dataString","type":"string"}],"name":"hashString","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"pure","type":"function"},{"constant":true,"inputs":[{"name":"dataBytes","type":"bytes"}],"name":"hashBytes","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"pure","type":"function"},{"constant":false,"inputs":[],"name":"selfDestruct","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":false,"stateMutability":"nonpayable","type":"fallback"}]
+            },
+            Prover: {
+                address: "0x117ca39dffc4da6fb3af6145dfff246830637fe2",
+                abi: [{"constant":true,"inputs":[{"name":"target","type":"address"},{"name":"dataHash","type":"bytes32"}],"name":"entryInformation","outputs":[{"name":"proved","type":"bool"},{"name":"time","type":"uint256"},{"name":"staked","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"dataHash","type":"bytes32"}],"name":"addEntry","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"registeredUsers","outputs":[{"name":"unique_addresses","type":"address[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"selfDestruct","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"target","type":"address"}],"name":"userEntries","outputs":[{"name":"entries","type":"bytes32[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"dataHash","type":"bytes32"}],"name":"deleteEntry","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":false,"stateMutability":"nonpayable","type":"fallback"}]
+            }
         };
-        var abis = {
-            Hash: [{"constant":true,"inputs":[{"name":"dataString","type":"string"}],"name":"hashString","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"pure","type":"function"},{"constant":true,"inputs":[{"name":"dataBytes","type":"bytes"}],"name":"hashBytes","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"pure","type":"function"},{"constant":false,"inputs":[],"name":"selfDestruct","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":false,"stateMutability":"nonpayable","type":"fallback"}],
-            Prover: [{"constant":true,"inputs":[{"name":"target","type":"address"},{"name":"dataHash","type":"bytes32"}],"name":"entryInformation","outputs":[{"name":"proved","type":"bool"},{"name":"time","type":"uint256"},{"name":"staked","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"dataHash","type":"bytes32"}],"name":"addEntry","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"registeredUsers","outputs":[{"name":"unique_addresses","type":"address[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"selfDestruct","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"target","type":"address"}],"name":"userEntries","outputs":[{"name":"entries","type":"bytes32[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"dataHash","type":"bytes32"}],"name":"deleteEntry","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":false,"stateMutability":"nonpayable","type":"fallback"}]
-        };
-        helperNamespace.Hash = web3.eth.contract(abis.Hash).at(addresses.Hash);
-        helperNamespace.Prover = web3.eth.contract(abis.Prover).at(addresses.Prover);
+        Object.keys(contracts).map(key => {
+            helperNamespace[key] = web3.eth.contract(contracts[key].abi).at(contracts[key].address);
+        });
     }
     initializeContracts();
 

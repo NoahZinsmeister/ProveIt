@@ -11,17 +11,8 @@
     user-select: none;
 }
 
-.nav-link .active {
-    color: #212529 !important;
-}
-
-/* nitpicky, but fixes border when expanding an address */
-.z-up {
-    z-index: 2 !important;
-}
-
-.list-group> .list-group-item:not(.active):hover {
-    background-color: lightgrey !important;
+.nofocus:focus {
+    box-shadow: none !important;
 }
 
 .cursor-pointer {
@@ -38,25 +29,6 @@
     color: #f5f5f5;
     background-image: none;
 }
-.nofocus:focus {
-    box-shadow: none !important;
-}
-
-.last-entry {
-    margin-bottom: -1px !important;
-}
-
-.bottom-border {
-    border-bottom: 1px solid lightgrey !important;
-    margin-bottom: 0 !important;
-}
-
-.bottom-border:hover {
-    border-bottom: 1px solid darkgrey !important;
-    margin-bottom: 0 !important;
-}
-
-
 
 /* fix file input box rounded corners bug */
 .rounded-right {
@@ -77,12 +49,11 @@
 
 /* scrollable anythings */
 .scrollable {
-    max-height: 500px;
+    max-height: 300px;
     overflow-x: hidden;
     overflow-y: auto;
 }
 .collapsing {
-    max-height: 500px;
     overflow-x: hidden;
     overflow-y: hidden;
 }
