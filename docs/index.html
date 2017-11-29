@@ -34,7 +34,7 @@
       <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Processing</h5>
+            <h5 class="modal-title">Processing</h5>
           </div>
           <div class="modal-body">
             Please be patient while your file is hashed. Closing this window before completion will cancel the upload. And in case you're wondering: we <strong>never</strong> see the contents of your file.
@@ -46,6 +46,21 @@
           </div>
           <div class="modal-footer mt-5">
             <button type="button" class="btn btn-danger" data-dismiss="modal" id="fileHashModalButton">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--  -->
+    <div class="modal container" id="web3Modal" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Web3 Error</h5>
+          </div>
+          <div class="modal-body">
+          </div>
+          <div class="modal-footer mt-5">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Dismiss</button>
           </div>
         </div>
       </div>
@@ -142,7 +157,7 @@
                 <button type="button" class="btn btn-block btn-outline-primary nofocus" id="userEntriesSubmit">Query</button>
               </div>
             </div>
-            <div class="scrollable">
+            <div class="scrollable mb-2">
               <ul class="list-group mt-3" id="userEntries">
               </ul>
             </div>
@@ -163,7 +178,7 @@
         &nbsp;
       </div>
       <div>
-        <button id="web3Button" type="button" class="my-auto btn btn-outline-danger nofocus" data-toggle="tooltip" data-placement="left" data-trigger="hover" title="No Web3 provider detected. Consider installing MetaMask.">
+        <button id="web3Button" type="button" class="my-auto btn btn-outline-secondary nofocus" data-toggle="tooltip" data-placement="auto" data-trigger="hover">
           Web3
         </button>
       </div>

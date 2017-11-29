@@ -1,9 +1,18 @@
 /*jshint esversion: 6 */
-var helperNamespace = window.helperNamespace || {};
+var helperNamespace = {};
 // add shared stuff to namespace
-helperNamespace.web3 = false;
+helperNamespace.web3 = {};
+helperNamespace.web3.supportedNetworks = ["Mainnet"];
 helperNamespace.sleep = function(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+};
+helperNamespace.changeTooltipTitle = function (tooltip, text) {
+    var originalTitle = $(tooltip).attr("data-original-title");
+    if (typeof originalTitle !== typeof undefined && originalTitle !== false) {
+        $(tooltip).attr('data-original-title', text);
+    } else {
+        $(tooltip).attr('title', text);
+    }
 };
 helperNamespace.parseFile = function (file, opts) {
     // credit to alediaferia on Github for most of this code
@@ -67,9 +76,9 @@ $(function() {
     function autoPopulate() {
         function changeBadge(text, badge) {
             $("#usersBadge")
-                .html(text)
-                .removeClass("badge-primary badge-warning badge-error")
-                .addClass(badge);
+            .html(text)
+            .removeClass("badge-primary badge-warning badge-error")
+            .addClass(badge);
         }
         function userEntry(address, name) {
             var out=`
@@ -109,11 +118,11 @@ $(function() {
                         return "";
                     });
                 }))
-                    .then(ENSNamesResolved => updateUsers(usersChecksummed, ENSNamesResolved))
-                    .catch(error => {
-                        changeBadge("Error", "badge-danger");
-                        console.log(error);
-                    });
+                .then(ENSNamesResolved => updateUsers(usersChecksummed, ENSNamesResolved))
+                .catch(error => {
+                    changeBadge("Error", "badge-danger");
+                    console.log(error);
+                });
             }
         });
     }
@@ -137,10 +146,10 @@ $(function() {
         function entryList (entry) {
             var out =`
             <div class="list-group-item d-flex justify-content-between">
-              <alert class="my-auto alert" role="alert">
-                ${entry}
-              </alert>
-              <button type="button" class="btn btn-primary nofocus my-auto copyable cursor-pointer" data-clipboard-text="${entry}">Copy</button>
+            <alert class="my-auto alert" role="alert">
+            ${entry}
+            </alert>
+            <button type="button" class="btn btn-primary nofocus my-auto copyable cursor-pointer" data-clipboard-text="${entry}">Copy</button>
             </div>
             `;
             return out;
@@ -148,7 +157,7 @@ $(function() {
         function errorEntries (text) {
             var out =`
             <div class="alert alert-danger noselect text-center" role="alert">
-              ${text}
+            ${text}
             </div>
             `;
             return out;
@@ -179,20 +188,20 @@ $(function() {
             var classes;
             switch (state) {
                 case "proven":
-                    classes = "alert-success";
-                    break;
+                classes = "alert-success";
+                break;
                 case "error":
-                    classes = "alert-danger noselect";
-                    break;
+                classes = "alert-danger noselect";
+                break;
                 case "default":
-                    classes = "alert-dark noselect";
-                    break;
+                classes = "alert-dark noselect";
+                break;
             }
 
             $("#entryInformation")
-                .removeClass("alert-dark alert-danger alert-success noselect")
-                .addClass(classes)
-                .html(text);
+            .removeClass("alert-dark alert-danger alert-success noselect")
+            .addClass(classes)
+            .html(text);
         }
 
         // form validation
@@ -222,34 +231,33 @@ $(function() {
         var hash;
         switch (entryType) {
             case "Entry Hash":
-                hash = $(".entryText").val();
-                parseResult();
-                break;
+            hash = $(".entryText").val();
+            parseResult();
+            break;
             case "Text":
-                hash = hashText($(".entryText").val());
-                parseResult();
-                break;
+            hash = hashText($(".entryText").val());
+            parseResult();
+            break;
             case "File":
-                var fileList = $(".custom-file-input")[0].files;
-                if (fileList.length !== 1) {
-                    stateChange("Please select 1 and only 1 file.", "error");
-                    return;
-                }
-                var file = fileList[0];
-                hashFile(file).then(hashResolved => {
-                    $("#fileHashModalButton")
-                        .removeClass("btn-danger")
-                        .addClass("btn-success")
-                        .html("Close");
-                    hash = hashResolved;
-                    console.log(hash);
-                    parseResult();
-                }).catch(error => {
-                    $("#fileHashModal").modal('hide');
-                    stateChange(error, "error");
-                    return;
-                });
-                break;
+            var fileList = $(".custom-file-input")[0].files;
+            if (fileList.length !== 1) {
+                stateChange("Please select 1 and only 1 file.", "error");
+                return;
+            }
+            var file = fileList[0];
+            hashFile(file).then(hashResolved => {
+                $("#fileHashModalButton")
+                    .removeClass("btn-danger")
+                    .addClass("btn-success")
+                    .html("Dismiss");
+                hash = hashResolved;
+                parseResult();
+            }).catch(error => {
+                $("#fileHashModal").modal('hide');
+                stateChange(error, "error");
+                return;
+            });
+            break;
         }
 
         function parseResult () {
@@ -269,197 +277,277 @@ $(function() {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric'}));
-                        displayString.push("at");
-                        displayString.push(date.toLocaleString("en-US", {
-                            timeZone: "UTC",
-                            hour12: false,
-                            hour: "numeric",
-                            minute: "numeric",
-                            timeZoneName: "short"}));
-                        displayString.push("against " + web3.fromWei(entryInfo[2].toNumber(), "ether") + " ETH.");
-                        stateChange(displayString.join(" "), "proven");
-                    } else {
-                        stateChange("Unproven.", "error");
-                    }
+                            displayString.push("at");
+                            displayString.push(date.toLocaleString("en-US", {
+                                timeZone: "UTC",
+                                hour12: false,
+                                hour: "numeric",
+                                minute: "numeric",
+                                timeZoneName: "short"}));
+                                displayString.push("against " + web3.fromWei(entryInfo[2].toNumber(), "ether") + " ETH.");
+                                stateChange(displayString.join(" "), "proven");
+                            } else {
+                                stateChange("Unproven.", "error");
+                            }
+                        }
+                    });
+                }
+            }
+
+            function hashText(message) {
+                var hash = browserifyModules.keccak('keccak256').update(message).digest("hex");
+                return "0x" + hash;
+            }
+
+            function hashFile(file) {
+                var hashObject = browserifyModules.keccak('keccak256');
+
+                var errorCallback = function(error) {
+                    throw new Error(`File upload error.`);
+                };
+                var chunkCallback = function(chunk, percentDone) {
+                    hashObject.update(browserifyModules.Buffer.from(chunk));
+                    $("#progressBar").attr("style", "width: " + percentDone.toString() + "%");
+                };
+                var finishedCallback = function() {
+                    var event = new CustomEvent('hashed', {detail: "0x" + hashObject.digest("hex")});
+                    $("#fileHashModal")[0].dispatchEvent(event);
+                };
+                // reset the modal
+                $("#progressBar").style = "width: 0%";
+                $("#fileHashModalButton")
+                .removeClass("btn-success")
+                .addClass("btn-danger")
+                .html("Cancel");
+
+                return new Promise((resolve, reject) => {
+                    // add hashed listener to modal
+                    $("#fileHashModal").one("hashed", function (event) {
+                        resolve(event.detail);
+                    });
+                    // add event listener for modal close, which cancels the promise
+                    $("#fileHashModal").one('hide.bs.modal', function (event) {
+                        reject("File upload cancelled.");
+                    });
+                    $("#fileHashModal").modal('show');
+                    // start parsing the file
+                    helperNamespace.parseFile(file, {
+                        "errorCallback": errorCallback,
+                        "chunkCallback": chunkCallback,
+                        "finishedCallback": finishedCallback
+                    });
+                });
+            }
+
+            function inputToggle (event) {
+                $(this).addClass('active').siblings().removeClass('active');
+                var placeholders = {
+                    "Entry Hash": "0x...",
+                    "Text": "Your message...",
+                };
+                var selection = $(this).html();
+                // update the addon text
+                $("#entryType").html(selection);
+                // hide both
+                $(".entryFile").hide();
+                $(".entryText").hide();
+                // unhide the right one
+                if (selection != "File") {
+                    $(".entryText")
+                    .show()
+                    .attr("placeholder", placeholders[selection])
+                    .val("");
+                } else {
+                    $(".entryFile")
+                    .show()
+                    .val("");
+                }
+            }
+
+            function fileUploadListener (event) {
+                var fileName = $(this).val().split("\\").pop();
+                $(this).next('.custom-file-control').addClass("selected").html(fileName);
+            }
+
+
+            // clipboard functionality
+            var clipboard = new Clipboard('.copyable', {
+                text: function(trigger) {
+                    return $(trigger).attr("data-clipboard-text");
                 }
             });
-        }
-    }
-
-    function hashText(message) {
-        var hash = browserifyModules.keccak('keccak256').update(message).digest("hex");
-        return "0x" + hash;
-    }
-
-    function hashFile(file) {
-        var hashObject = browserifyModules.keccak('keccak256');
-
-        var errorCallback = function(error) {
-            throw new Error(`File upload error.`);
-        };
-        var chunkCallback = function(chunk, percentDone) {
-            hashObject.update(browserifyModules.Buffer.from(chunk));
-            $("#progressBar").attr("style", "width: " + percentDone.toString() + "%");
-        };
-        var finishedCallback = function() {
-            var event = new CustomEvent('hashed', {detail: "0x" + hashObject.digest("hex")});
-            $("#fileHashModal")[0].dispatchEvent(event);
-        };
-        // reset the modal
-        $("#progressBar").style = "width: 0%";
-        $("#fileHashModalButton")
-            .removeClass("btn-success")
-            .addClass("btn-danger")
-            .html("Cancel");
-
-        return new Promise((resolve, reject) => {
-            // add hashed listener to modal
-            $("#fileHashModal").one("hashed", function (event) {
-                resolve(event.detail);
-            });
-            // add event listener for modal close, which cancels the promise
-            $("#fileHashModal").one('hide.bs.modal', function (event) {
-                reject("File upload cancelled.");
-            });
-            $("#fileHashModal").modal('show');
-            // start parsing the file
-            helperNamespace.parseFile(file, {
-                "errorCallback": errorCallback,
-                "chunkCallback": chunkCallback,
-                "finishedCallback": finishedCallback
-            });
-        });
-    }
-
-    function inputToggle (event) {
-        $(this).addClass('active').siblings().removeClass('active');
-        var placeholders = {
-            "Entry Hash": "0x...",
-            "Text": "Your message...",
-        };
-        var selection = $(this).html();
-        // update the addon text
-        $("#entryType").html(selection);
-        // hide both
-        $(".entryFile").hide();
-        $(".entryText").hide();
-        // unhide the right one
-        if (selection != "File") {
-            $(".entryText")
-                .show()
-                .attr("placeholder", placeholders[selection])
-                .val("");
-        } else {
-            $(".entryFile")
-                .show()
-                .val("");
-        }
-    }
-
-    function fileUploadListener (event) {
-        var fileName = $(this).val().split("\\").pop();
-        $(this).next('.custom-file-control').addClass("selected").html(fileName);
-    }
-
-
-    // clipboard functionality
-    var clipboard = new Clipboard('.copyable', {
-        text: function(trigger) {
-            return $(trigger).attr("data-clipboard-text");
-        }
-    });
-    function changeTooltipTitle(tooltip, text) {
-        var originalTitle = $(tooltip).attr("data-original-title");
-        if (typeof originalTitle !== typeof undefined && originalTitle !== false) {
-            $(tooltip).tooltip("hide")
-            .attr('data-original-title', text);
-        } else {
-            $(tooltip).attr('title', text);
-        }
-    }
-    function clipboardSuccess (event) {
-        changeTooltipTitle(event.trigger, "Copied!");
-        $(event.trigger).one('shown.bs.tooltip', function () {
-            $(this).tooltip("disable");
-        });
-        $(event.trigger).tooltip("enable").tooltip("show");
-    }
-    function clipboardError (event) {
-        changeTooltipTitle(event.trigger, "An error occured, please copy manually.");
-        $(event.trigger).one('shown.bs.tooltip', function () {
-            $(this).tooltip("disable");
-        });
-        $(event.trigger).tooltip("enable").tooltip("show");
-    }
-    clipboard.on('success', clipboardSuccess);
-    clipboard.on('error', clipboardError);
-    function initializeCopyables (element) {
-        element
-            .find('.copyable')
-            .attr("data-toggle", "tooltip")
-            .attr("data-trigger", "hover")
-            .attr("data-placement", "right")
-            .tooltip({delay: {hide: 400}});
-    }
-
-    // add event listeners
-    $("#entryInformationSubmit").on("click", entryInformation);
-    $("#userEntriesSubmit").on("click", populateEntries);
-    $("#entryToggle button").on('click', inputToggle);
-
-    // hide and add event listener to file uploader
-    $(".entryFile").hide();
-    $(".entryFile").children("input").on('change', fileUploadListener);
-
-    // initialize tooltips
-    $('[data-toggle="tooltip"]').tooltip();
-
-    // this is also tried on window load
-    if (!helperNamespace.autoPopulated & helperNamespace.web3) {
-        autoPopulate();
-        helperNamespace.autoPopulated = true;
-    }
-});
-
-
-$(window).on("load", function () {
-    // web3 initialization
-    function initializeWeb3() {
-        if (typeof web3 !== 'undefined') {
-            window.web3 = new Web3(web3.currentProvider);
-        } else {
-            window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/zKmHyEn4VwJ4in3cptiL"));
-        }
-        helperNamespace.web3 = true;
-        helperNamespace.ens = new browserifyModules.ENS(web3);
-        $("#web3Button")
-            .attr("title", "Web3 Provider detected: " + web3.currentProvider.constructor.name)
-            .removeClass("btn-outline-danger")
-            .addClass("btn-outline-success");
-    }
-    initializeWeb3();
-
-    // contract initialization after web3
-    function initializeContracts() {
-        var contracts = {
-            Hash: {
-                address: "0xca260ffffb0270ee07ec6892fa9d44f040454e4d",
-                abi: [{"constant":true,"inputs":[{"name":"dataString","type":"string"}],"name":"hashString","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"pure","type":"function"},{"constant":true,"inputs":[{"name":"dataBytes","type":"bytes"}],"name":"hashBytes","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"pure","type":"function"},{"constant":false,"inputs":[],"name":"selfDestruct","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":false,"stateMutability":"nonpayable","type":"fallback"}]
-            },
-            Prover: {
-                address: "0x117ca39dffc4da6fb3af6145dfff246830637fe2",
-                abi: [{"constant":true,"inputs":[{"name":"target","type":"address"},{"name":"dataHash","type":"bytes32"}],"name":"entryInformation","outputs":[{"name":"proved","type":"bool"},{"name":"time","type":"uint256"},{"name":"staked","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"dataHash","type":"bytes32"}],"name":"addEntry","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"registeredUsers","outputs":[{"name":"unique_addresses","type":"address[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"selfDestruct","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"target","type":"address"}],"name":"userEntries","outputs":[{"name":"entries","type":"bytes32[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"dataHash","type":"bytes32"}],"name":"deleteEntry","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":false,"stateMutability":"nonpayable","type":"fallback"}]
+            function clipboardSuccess (event) {
+                helperNamespace.changeTooltipTitle(event.trigger, "Copied!");
+                $(event.trigger).one('shown.bs.tooltip', function () {
+                    $(this).tooltip("disable");
+                });
+                $(event.trigger).tooltip("enable").tooltip("show");
             }
-        };
-        Object.keys(contracts).map(key => {
-            helperNamespace[key] = web3.eth.contract(contracts[key].abi).at(contracts[key].address);
-        });
-    }
-    initializeContracts();
+            function clipboardError (event) {
+                helperNamespace.changeTooltipTitle(event.trigger, "An error occured, please copy manually.");
+                $(event.trigger).one('shown.bs.tooltip', function () {
+                    $(this).tooltip("disable");
+                });
+                $(event.trigger).tooltip("enable").tooltip("show");
+            }
+            clipboard.on('success', clipboardSuccess);
+            clipboard.on('error', clipboardError);
+            function initializeCopyables (element) {
+                element
+                .find('.copyable')
+                .attr("data-toggle", "tooltip")
+                .attr("data-trigger", "hover")
+                .attr("data-placement", "auto")
+                .tooltip({delay: {hide: 400}});
+            }
 
-    // this is also tried at the end of document ready
-    if (!helperNamespace.autoPopulated & "autoPopulate" in helperNamespace) {
-        helperNamespace.autoPopulate();
-        helperNamespace.autoPopulated = true;
-    }
-});
+            // add event listeners
+            $("#entryInformationSubmit").on("click", entryInformation);
+            $("#userEntriesSubmit").on("click", populateEntries);
+            $("#entryToggle button").on('click', inputToggle);
+
+            // hide and add event listener to file uploader
+            $(".entryFile").hide();
+            $(".entryFile").children("input").on('change', fileUploadListener);
+
+            // initialize tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+
+
+        $(window).on("load", function () {
+            // web3 initialization
+            function initializeWeb3() {
+                if (typeof web3 !== 'undefined') {
+                    window.web3 = new Web3(web3.currentProvider);
+                } else {
+                    window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/zKmHyEn4VwJ4in3cptiL"));
+                    helperNamespace.web3.defaultedToInfura = true;
+                }
+                helperNamespace.web3.available = true;
+                web3CheckOnce();
+                web3CheckMany();
+            }
+            initializeWeb3();
+
+            // contract initialization after web3
+            function initializeContracts(network) {
+                var contracts = {
+                    Hash: {
+                        abi: [{"constant":true,"inputs":[{"name":"dataString","type":"string"}],"name":"hashString","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"pure","type":"function"},{"constant":true,"inputs":[{"name":"dataBytes","type":"bytes"}],"name":"hashBytes","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"pure","type":"function"},{"constant":false,"inputs":[],"name":"selfDestruct","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":false,"stateMutability":"nonpayable","type":"fallback"}]
+                    },
+                    Prover: {
+                        abi: [{"constant":true,"inputs":[{"name":"target","type":"address"},{"name":"dataHash","type":"bytes32"}],"name":"entryInformation","outputs":[{"name":"proved","type":"bool"},{"name":"time","type":"uint256"},{"name":"staked","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"dataHash","type":"bytes32"}],"name":"addEntry","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"registeredUsers","outputs":[{"name":"unique_addresses","type":"address[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"selfDestruct","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"target","type":"address"}],"name":"userEntries","outputs":[{"name":"entries","type":"bytes32[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"dataHash","type":"bytes32"}],"name":"deleteEntry","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":false,"stateMutability":"nonpayable","type":"fallback"}]
+                    }
+                };
+                switch (network) {
+                    case "Mainnet":
+                    contracts.Hash.address = "0xca260ffffb0270ee07ec6892fa9d44f040454e4d";
+                    contracts.Prover.address = "0x117ca39dffc4da6fb3af6145dfff246830637fe2";
+                    break;
+                }
+                Object.keys(contracts).map(key => {
+                    helperNamespace[key] = web3.eth.contract(contracts[key].abi).at(contracts[key].address);
+                });
+            }
+
+            function updateWeb3Tooltip () {
+                function changeButton(text, status) {
+                    helperNamespace.changeTooltipTitle($("#web3Button"), text);
+                    switch (status) {
+                        case "success":
+                            $("#web3Button")
+                                .removeClass("btn-outline-success btn-outline-danger btn-outline-secondary btn-outline-warning")
+                                .addClass("btn-outline-success");
+                            break;
+                        case "warning":
+                            $("#web3Button")
+                                .removeClass("btn-outline-success btn-outline-danger btn-outline-secondary btn-outline-warning")
+                                .addClass("btn-outline-warning");
+                            break;
+                        case "danger":
+                            $("#web3Button")
+                                .removeClass("btn-outline-success btn-outline-danger btn-outline-secondary btn-outline-warning")
+                                .addClass("btn-outline-danger");
+                            break;
+                    }
+                }
+                if (! helperNamespace.web3.available) {
+                    changeButton("No Web3 Provider found. Consider installing MetaMask.", danger);
+                } else {
+                    if (helperNamespace.web3.defaultedToInfura) {
+                        changeButton(`No Web3 Provider detected, falling back to INFURA on the Mainnet. Consider installing MetaMask or using a DApp-friendly browser.`, "warning");
+                    } else {
+                        changeButton(`Using ${helperNamespace.web3.providerName} on the ${helperNamespace.web3.networkName}.`, "success");
+                    }
+                }
+            }
+
+            function web3CheckMany () {
+                // set default acct (metamask only for now)
+                if (web3.currentProvider.isMetaMask) {
+                    if (helperNamespace.web3.account !== web3.eth.accounts[0]) {
+                        helperNamespace.web3.account = web3.eth.accounts[0];
+                    }
+                }
+                // schedule repeat
+                setTimeout(web3CheckMany, 1000);
+            }
+
+            function web3CheckOnce () {
+                // initialize ens
+                helperNamespace.ens = new browserifyModules.ENS(web3);
+                // set provider name
+                helperNamespace.web3.providerName = web3.currentProvider.constructor.name;
+                // set network name
+                web3.version.getNetwork((error, networkId) => {
+                    var networkName;
+                    if (error) {
+                        networkName = "error";
+                    }
+                    else {
+                        switch (networkId) {
+                            case "0":
+                                networkName = 'pre-release Olympic test net';
+                                break;
+                            case "1":
+                                networkName = 'Mainnet';
+                                break;
+                            case "2":
+                                networkName = 'deprecated Morden test net';
+                                break;
+                            case "3":
+                                networkName = 'Ropsten test net';
+                                break;
+                            case "4":
+                                networkName = 'Rinkeby test net';
+                                break;
+                            case "42":
+                                networkName = 'proof-of-authority Kovan test net';
+                                break;
+                            default:
+                                networkName = 'unknown network';
+                        }
+                    }
+                    helperNamespace.web3.networkName = networkName;
+                    // see how things break when we do it this way
+                    if (! helperNamespace.web3.supportedNetworks.includes(helperNamespace.web3.networkName)) {
+                        $("#web3Modal").modal("show");
+                        $("#web3Modal").find(".modal-body").html(`Your Web3 provider ${helperNamespace.web3.providerName} is currently on the ${helperNamespace.web3.networkName}. ProveIt is not supported on this network, please switch to one of: [${helperNamespace.web3.supportedNetworks.join(", ")}].`);
+                        return;
+                    }
+                    updateWeb3Tooltip();
+                    initializeContracts(helperNamespace.web3.networkName);
+                    // annoying but we don't know if it's been exported yet
+                    function autoPopTimer() {
+                        if ("autoPopulate" in helperNamespace) {
+                            helperNamespace.autoPopulate();
+                        } else {
+                            setTimeout(autoPopTimer, 100);
+                        }
+                    }
+                    autoPopTimer();
+
+                });
+            }
+        });
