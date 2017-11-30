@@ -18,6 +18,10 @@ I'll add the ability to add/delete ledger entries soon via the Github Page and M
 
 ### Technical notes
 * While building ProveIt, I realized that having set functionality would be helpful, so I implemented it in contracts/Sets.sol. It's quite efficient, with O(1) insertion, removal, and existence checks.
-* Hash.sol is deployed at: ```0xca260ffffb0270ee07ec6892fa9d44f040454e4d``` and is [verified on Etherscan](https://etherscan.io/address/0x48d904b3bf1cfcd7e1ce2dbcf7dcaecf0b0575c6).
-* Sets.sol is deployed at: ```0x48d904b3bf1cfcd7e1ce2dbcf7dcaecf0b0575c6``` and is [verified on Etherscan](https://etherscan.io/address/0x48d904b3bf1cfcd7e1ce2dbcf7dcaecf0b0575c6).
-* Prover.sol is deployed at: ```0x117ca39dffc4da6fb3af6145dfff246830637fe2``` and is [verified on Etherscan](https://etherscan.io/address/0x117ca39dffc4da6fb3af6145dfff246830637fe2).
+Contracts of interest are deployed at:
+
+| Contract   | Address                                    | Link                    | Network |
+|------------|--------------------------------------------|-------------------------|---------|
+| Prover.sol | 0x117ca39dffc4da6fb3af6145dfff246830637fe2<br>0x286e1143ab350d0238be4494da6dab9ca3662517<br>0x286e1143ab350d0238be4494da6dab9ca3662517 | [verified on Etherscan](https://etherscan.io/address/0x117ca39dffc4da6fb3af6145dfff246830637fe2)<br>[Etherscan](https://rinkeby.etherscan.io/address/0x286e1143ab350d0238be4494da6dab9ca3662517)<br>[Etherscan](https://ropsten.etherscan.io/address/0x286e1143ab350d0238be4494da6dab9ca3662517) | Mainnet<br>Rinkeby<br>Ropsten |
+| Hash.sol   | 0xca260ffffb0270ee07ec6892fa9d44f040454e4d<br>0x125bbe680d2c6665151ad8c9c89727a64683fdcb<br>0x125bbe680d2c6665151ad8c9c89727a64683fdcb | [verified on Etherscan](https://etherscan.io/address/0xca260ffffb0270ee07ec6892fa9d44f040454e4d)<br>[Etherscan](https://rinkeby.etherscan.io/address/0x125bbe680d2c6665151ad8c9c89727a64683fdcb)<br>[Etherscan](https://ropsten.etherscan.io/address/0x125bbe680d2c6665151ad8c9c89727a64683fdcb) | Mainnet<br>Rinkeby<br>Ropsten |
+| Sets.sol   | 0x48d904b3bf1cfcd7e1ce2dbcf7dcaecf0b0575c6<br>0x2aacb774a7214075372b52e24ff7391a4e3ea883<br>0x2aacb774a7214075372b52e24ff7391a4e3ea883 | [verified on Etherscan](https://etherscan.io/address/0x48d904b3bf1cfcd7e1ce2dbcf7dcaecf0b0575c6)<br>[Etherscan](https://rinkeby.etherscan.io/address/0x2aacb774a7214075372b52e24ff7391a4e3ea883)<br>[Etherscan](https://ropsten.etherscan.io/address/0x2aacb774a7214075372b52e24ff7391a4e3ea883) | Mainnet<br>Rinkeby<br>Ropsten |

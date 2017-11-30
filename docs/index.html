@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <title>Prove It</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="Proof of historical data possession on the Ethereum blockchain.">
+  <meta name="description" content="Proof of possession on the Ethereum blockchain.">
   <meta name="author" content="Noah Zinsmeister">
+  <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="apple-touch-icon" sizes="180x180" href="./favicons/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="./favicons/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="./favicons/favicon-16x16.png">
@@ -16,14 +16,14 @@
   <meta name="msapplication-config" content="./favicons/browserconfig.xml">
   <meta name="theme-color" content="#ffffff">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/main.css">
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="css/main.css">
   <script src="https://cdn.rawgit.com/zenorocha/clipboard.js/v1.7.1/dist/clipboard.min.js"></script>
   <script type="text/javascript" src="https://rawgit.com/ethereum/web3.js/master/dist/web3.min.js"></script>
-  <script type="text/javascript" src="js/main.js"></script>
   <script type="text/javascript" src="js/bundle.js"></script>
+  <script type="text/javascript" src="js/main.js"></script>
 </head>
 
 <body>
@@ -51,16 +51,17 @@
       </div>
     </div>
     <!--  -->
-    <div class="modal container" id="web3Modal" tabindex="-1" role="dialog">
-      <div class="modal-dialog modal-lg" role="document">
+    <div class="modal fade" tabindex="-1" id="errorModal" role="dialog">
+      <div class="modal-dialog modal-lg">
         <div class="modal-content">
+
           <div class="modal-header">
-            <h5 class="modal-title">Web3 Error</h5>
+            <h5 class="modal-title"></h5>
           </div>
           <div class="modal-body">
           </div>
           <div class="modal-footer mt-5">
-            <button type="button" class="btn btn-primary" data-dismiss="modal">Dismiss</button>
+            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
@@ -70,7 +71,7 @@
     <div class="jumbotron">
       <div class="container">
         <h1 class="display-2">Pr⟠ve<strong>It</strong></h1>
-        <p class="lead">Proof of historical data possession on the <a target="_blank" class="nounderline" href="https://www.ethereum.org/">Ethereum</a> blockchain</p>
+        <p class="lead">Proof of possession on the <a target="_blank" class="nounderline" href="https://www.ethereum.org/">Ethereum</a> blockchain</p>
       </div>
     </div>
 
@@ -106,16 +107,12 @@
                   <div class="input-group-btn">
                     <button id="entryType" type="button" class="btn btn-secondary dropdown-toggle input-group-addon" data-toggle="dropdown">Entry Hash</button>
                     <div class="dropdown-menu" id="entryToggle">
-                      <button class="dropdown-item active" type="button">Entry Hash</button>
+                      <button class="dropdown-item" type="button">Entry Hash</button>
                       <button class="dropdown-item" type="button">Text</button>
                       <button class="dropdown-item" type="button">File</button>
                     </div>
                   </div>
-                  <label class="custom-file col-lg entryFile">
-                    <input type="file" id="entryInformationFile" class="custom-file-input">
-                    <span class="custom-file-control rounded-right"></span>
-                  </label>
-                  <input type="text" class="form-control entryText" id="entryInformationText" placeholder="0x...">
+                  <input type="text" class="form-control" placeholder="0x...">
                 </div>
               </div>
             </div>
@@ -143,7 +140,7 @@
             </div>
           </ul>
 
-          <!-- userEntries -->
+          <!-- userEntries
           <h4 class="text-center mt-5">User Entries</h4>
           <form id="entriesForm">
             <div class="form-row">
@@ -161,13 +158,13 @@
               <ul class="list-group mt-3" id="userEntries">
               </ul>
             </div>
-          </form>
+          </form> -->
 
         </div>
         <!-- Submission tab-->
         <div class="tab-pane fade text-center" id="submit" role="tabpanel"><p class="mt-5">Submission to ProveIt via <a target="_blank" class="nounderline" href="https://metamask.io/">MetaMask</a> is coming soon.</p></div>
         <!-- About tab-->
-        <div class="tab-pane fade text-center" id="about" role="tabpanel"><p class="mt-5">For more information on ProveIt, visit our <a target="_blank" class="nounderline" href="https://github.com/NoahZinsmeister/ProveIt">Github</a>.</p></div>
+        <div class="tab-pane fade text-center" id="about" role="tabpanel"><p class="mt-5">ProveIt empowers individuals to lay claim to their history. It's a decentralized application - ĐApp for short - powered by <a target="_blank" class="nounderline" href="https://www.ethereum.org/">Ethereum</a>.<br><br>ProveIt offers users a simple value proposition: the ability to prove that they said or possessed something, anything, at a particular time in the past. To be able to do this in the absence of any trusted intermediary is an extraordinary and unprecedented phenomenon. For more technical information on ProveIt (including hypothetical use cases), and to view the entirety of our open-source codebase, please visit our <a target="_blank" class="nounderline" href="https://github.com/NoahZinsmeister/ProveIt">Github</a>.</p><br><br><h2>⟠</h2></div>
       </div>
     </div>
   </main>

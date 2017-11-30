@@ -12,15 +12,15 @@
 }
 
 .nofocus:focus {
-    box-shadow: none !important;
+    box-shadow: none;
 }
 
 .cursor-pointer {
-    cursor: pointer !important;
+    cursor: pointer;
 }
 
 .cursor-auto {
-    cursor: auto !important;
+    cursor: auto;
 }
 
 /* entry selector hover selection */
@@ -32,19 +32,8 @@
 
 /* fix file input box rounded corners bug */
 .rounded-right {
-    border-top-left-radius: 0 !important;
-    border-bottom-left-radius: 0 !important;
-}
-
-/* add filename to file input box */
-.custom-file-control .selected ::after {
-  content: "" !important;
-}
-.custom-file {
-  overflow: hidden !important;
-}
-.custom-file-control {
-  white-space: nowrap !important;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
 }
 
 /* scrollable anythings */

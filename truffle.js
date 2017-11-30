@@ -11,30 +11,45 @@ var privateKey = secrets.config.myPrivateKey;
 var wallet = ethereumjsWallet.fromPrivateKey(new Buffer(privateKey, "hex"));
 
 // mainnet
-var providerUrl = "https://mainnet.infura.io/" + secrets.config.infuraKey;
-var engine = new ProviderEngine();
-engine.addProvider(new FilterSubprovider());
-//engine.addProvider(new WalletSubprovider(wallet, {}));
-engine.addProvider(new WalletSubprovider(wallet, {}));
-engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(providerUrl)));
-engine.start();
-
+var providerURL = {
+    Main: "https://mainnet.infura.io/" + secrets.config.infuraKey,
+    Ropsten: "https://ropsten.infura.io/" + secrets.config.infuraKey,
+    Rinkeby: "https://rinkeby.infura.io/" + secrets.config.infuraKey
+};
+var engines = {
+    Main: new ProviderEngine(),
+    Ropsten: new ProviderEngine(),
+    Rinkeby: new ProviderEngine()
+};
+var networks = ["Main", "Ropsten", "Rinkeby"];
+for (let i=0; i<networks.length; i++) {
+    engines[networks[i]].addProvider(new FilterSubprovider());
+    engines[networks[i]].addProvider(new WalletSubprovider(wallet, {}));
+    engines[networks[i]].addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(providerURL[networks[i]])));
+    engines[networks[i]].start();
+}
 var gas = 4712388;
 var gasPrice = 1.5*1e9;
 
 module.exports = {
     networks: {
-        live: {
+        infuraMain: {
             network_id: 1,
-            host: "localhost",
-            port: 8545,
+            provider: engines["Main"],
             gas: gas,
             gasPrice: gasPrice,
             from: secrets.config.myAddress
         },
-        infuraLive: {
-            network_id: 1,
-            provider: engine,
+        infuraRopsten: {
+            network_id: 3,
+            provider: engines["Ropsten"],
+            gas: gas/2,
+            gasPrice: gasPrice,
+            from: secrets.config.myAddress
+        },
+        infuraRinkeby: {
+            network_id: 4,
+            provider: engines["Rinkeby"],
             gas: gas,
             gasPrice: gasPrice,
             from: secrets.config.myAddress
