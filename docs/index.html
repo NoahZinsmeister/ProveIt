@@ -34,7 +34,7 @@
       <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Processing</h5>
+            <h5 class="modal-title">Processing...</h5>
           </div>
           <div class="modal-body">
             Please be patient while your file is hashed. Closing this window before completion will cancel the upload. And in case you're wondering: we <strong>never</strong> see the contents of your file.
@@ -94,19 +94,19 @@
 
           <!-- ProveIt -->
           <h4 class="text-center mt-5">Prove It</h4>
-          <form>
+          <form id="readEntry">
             <div class="form-row">
               <div class="form-group col-lg-5">
                 <div class="input-group">
                   <div class="input-group-addon">Address</div>
-                  <input type="text" class="form-control" id="entryInformationAddress" placeholder="0x...">
+                  <input type="text" class="form-control" placeholder="0x...">
                 </div>
               </div>
               <div class="form-group col-lg-7">
-                <div class="input-group" id="entrySelectorDiv">
+                <div class="input-group">
                   <div class="input-group-btn">
-                    <button id="entryType" type="button" class="btn btn-secondary dropdown-toggle input-group-addon" data-toggle="dropdown">Entry Hash</button>
-                    <div class="dropdown-menu" id="entryToggle">
+                    <button type="button" class="btn btn-secondary dropdown-toggle input-group-addon" data-toggle="dropdown">Entry Hash</button>
+                    <div class="dropdown-menu">
                       <button class="dropdown-item" type="button">Entry Hash</button>
                       <button class="dropdown-item" type="button">Text</button>
                       <button class="dropdown-item" type="button">File</button>
@@ -118,10 +118,10 @@
             </div>
             <div class="form-row">
               <div class="form-group col-lg-1">
-                <button type="button" class="h-100 btn-block btn btn-outline-primary nofocus" id="entryInformationSubmit">ProveIt</button>
+                <button type="button" class="h-100 btn-block btn btn-outline-primary nofocus">ProveIt</button>
               </div>
               <div class="form-group col-lg-11 mb-0 text-center">
-                <div class="alert alert-dark noselect" id="entryInformation" role="alert">
+                <div class="alert alert-dark noselect" role="alert">
                   &nbsp;
                 </div>
               </div>
@@ -162,7 +162,43 @@
 
         </div>
         <!-- Submission tab-->
-        <div class="tab-pane fade text-center" id="submit" role="tabpanel"><p class="mt-5">Submission to ProveIt via <a target="_blank" class="nounderline" href="https://metamask.io/">MetaMask</a> is coming soon.</p></div>
+        <div class="tab-pane fade text-center" id="submit" role="tabpanel">
+          <!-- Submit -->
+          <h4 class="text-center mt-5">Prove It</h4>
+          <form id="submitEntry">
+            <div class="form-row">
+              <div class="form-group col-lg-5">
+                <div class="input-group">
+                  <div class="input-group-addon">Amount (ETH)</div>
+                  <input type="text" class="form-control" placeholder="0">
+                </div>
+              </div>
+              <div class="form-group col-lg-7">
+                <div class="input-group">
+                  <div class="input-group-btn">
+                    <button type="button" class="btn btn-secondary dropdown-toggle input-group-addon" data-toggle="dropdown">Entry Hash</button>
+                    <div class="dropdown-menu">
+                      <button class="dropdown-item" type="button">Entry Hash</button>
+                      <button class="dropdown-item" type="button">Text</button>
+                      <button class="dropdown-item" type="button">File</button>
+                    </div>
+                  </div>
+                  <input type="text" class="form-control" placeholder="0x...">
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-lg-1">
+                <button type="button" class="h-100 btn-block btn btn-outline-primary nofocus">Submit</button>
+              </div>
+              <div class="form-group col-lg-11 mb-0 text-center">
+                <div class="alert alert-dark noselect" role="alert">
+                  &nbsp;
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
         <!-- About tab-->
         <div class="tab-pane fade text-center" id="about" role="tabpanel"><p class="mt-5">ProveIt empowers individuals to lay claim to their history. It's a decentralized application - ĐApp for short - powered by <a target="_blank" class="nounderline" href="https://www.ethereum.org/">Ethereum</a>.<br><br>ProveIt offers users a simple value proposition: the ability to prove that they said or possessed something, anything, at a particular time in the past. To be able to do this in the absence of any trusted intermediary is an extraordinary and unprecedented phenomenon. For more technical information on ProveIt (including hypothetical use cases), and to view the entirety of our open-source codebase, please visit our <a target="_blank" class="nounderline" href="https://github.com/NoahZinsmeister/ProveIt">Github</a>.</p><br><br><h2>⟠</h2></div>
       </div>

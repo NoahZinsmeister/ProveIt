@@ -200,63 +200,68 @@ ProveIt = (function($) {
             });
         },
 
-        entryInformation: function () {
+        entryInformation: function (event) {
             function stateChange(text, state) {
                 var classes;
                 switch (state) {
                     case "proven":
-                    classes = "alert-success";
-                    break;
+                        classes = "alert-success";
+                        break;
                     case "error":
-                    classes = "alert-danger noselect";
-                    break;
+                        classes = "alert-danger noselect";
+                        break;
                     case "default":
-                    classes = "alert-dark noselect";
-                    break;
+                        classes = "alert-dark noselect";
+                        break;
+                    case "warning":
+                        classes = "alert-warning noselect";
+                        break;
                 }
 
-                $("#entryInformation")
-                    .removeClass("alert-dark alert-danger alert-success noselect")
+                form.find("[role='alert']")
+                    .removeClass("alert-dark alert-danger alert-success alert-warning noselect")
                     .addClass(classes)
                     .html(text);
             }
 
+            var form = $(event.target).html() == "ProveIt" ? $("#readEntry") : $("#submitEntry");
+
             // form validation
-            var address = $("#entryInformationAddress").val();
-            var entryType = $("#entryType").html();
+            var address = form.find(".form-control").first().val();
+            var entryType = form.find("[data-toggle='dropdown']").html();
 
             function validHash() {
                 // TODO implement validity checks here.
-                // hash.substring(0, 2) == "0x" && hash.length == 34;
+                // hash.substring(0, 2) == "0x" && hash.length == 66;
                 return true;
             }
-
+            /* turning off validation again b/c of annoying address/amount thing
             if (! (web3.isAddress(address) & validHash())) {
                 event.preventDefault();
                 event.stopPropagation();
                 if (! web3.isAddress(address)) {
-                    $("#entryInformationAddress").addClass('is-invalid');
+                    form.find(".form-control").first().addClass('is-invalid');
                 }
                 stateChange("&nbsp;", "default");
                 return;
             } else {
-                $("#entryInformationAddress").removeClass("is-invalid").addClass('is-valid');
-            }
+                form.find(".form-control").first().removeClass("is-invalid").addClass('is-valid');
+            } */
 
             stateChange("Loading...", "default");
 
             var hash;
             switch (entryType) {
                 case "Entry Hash":
-                    hash = $(".entryText").val();
+                    hash = form.find("input:eq(1)").val();
                     parseResult();
                     break;
                 case "Text":
-                    hash = ProveIt.hashText($(".entryText").val());
+                    hash = ProveIt.hashText(form.find("input:eq(1)").val());
                     parseResult();
                     break;
                 case "File":
-                    var fileList = $(".custom-file-input")[0].files;
+                    var fileList = form.find(".custom-file-input")[0].files;
                     if (fileList.length !== 1) {
                         stateChange("Please select 1 and only 1 file.", "error");
                         return;
@@ -264,9 +269,9 @@ ProveIt = (function($) {
                     var file = fileList[0];
                     ProveIt.hashFile(file).then(hashResolved => {
                         $("#fileHashModalButton")
-                            .removeClass("btn-danger")
-                            .addClass("btn-success")
-                            .html("Dismiss");
+                            .removeClass("btn-outline-danger")
+                            .addClass("btn-outline-success")
+                            .html("Success");
                         hash = hashResolved;
                         parseResult();
                     }).catch(error => {
@@ -277,37 +282,60 @@ ProveIt = (function($) {
                     break;
             }
 
-            function parseResult () {
-                ProveIt.Prover.entryInformation.call(address, hash, function (error, entryInfo) {
-                    if (error) {
-                        stateChange("Error.", "error");
-                        console.log(error);
-                        return;
-                    } else {
-                        if (entryInfo[0]) {
-                            var date = new Date(entryInfo[1].toNumber() * 1000);
-                            var displayString = [];
-                            displayString.push("Submitted on");
-                            displayString.push(date.toLocaleString("en-US", {
-                                timeZone: "UTC",
-                                hour12: false,
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'}));
-                            displayString.push("at");
-                            displayString.push(date.toLocaleString("en-US", {
-                                timeZone: "UTC",
-                                hour12: false,
-                                hour: "numeric",
-                                minute: "numeric",
-                                timeZoneName: "short"}));
-                            displayString.push("against " + web3.fromWei(entryInfo[2].toNumber(), "ether") + " ETH.");
-                            stateChange(displayString.join(" "), "proven");
+            function parseResult (parseType) {
+                if (form.attr("id") == "readEntry") {
+                    ProveIt.Prover.entryInformation.call(address, hash, function (error, entryInfo) {
+                        if (error) {
+                            stateChange("Error.", "warning");
+                            console.log(error);
+                            return;
                         } else {
+                            if (entryInfo[0]) {
+                                var date = new Date(entryInfo[1].toNumber() * 1000);
+                                var displayString = [];
+                                displayString.push("Submitted on");
+                                displayString.push(date.toLocaleString("en-US", {
+                                    timeZone: "UTC",
+                                    hour12: false,
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'}));
+                                displayString.push("at");
+                                displayString.push(date.toLocaleString("en-US", {
+                                    timeZone: "UTC",
+                                    hour12: false,
+                                    hour: "numeric",
+                                    minute: "numeric",
+                                    timeZoneName: "short"}));
+                                displayString.push("against " + web3.fromWei(entryInfo[2].toNumber(), "ether") + " ETH.");
+                                stateChange(displayString.join(" "), "proven");
+                            } else {
                                 stateChange("Unproven.", "error");
+                            }
                         }
-                    }
-                });
+                    });
+                } else {
+                    // note that address here is amount - fixing soon ofc
+                    var data = [];
+                    // add function signature
+                    data.push(web3.sha3("addEntry(bytes32)").substring(0, 10));
+                    // add argument (no need to pad, it's already 32 bytes)
+                    data.push(hash.substring(2));
+                    data = data.join("");
+                    web3.eth.sendTransaction({
+                        from: ProveIt.web3Status.account,
+                        to: ProveIt.Prover.address,
+                        value: web3.toWei(Number(address), "ether"),
+                        data: data,
+                    }, function (error, transactionHash) {
+                        if (error) {
+                            console.log(error);
+                            stateChange("Error.", "error");
+                        } else {
+                            stateChange(`Tx hash: ${transactionHash}`, "proven");
+                        }
+                    });
+                }
             }
         },
 
@@ -366,12 +394,13 @@ ProveIt = (function($) {
                   <span class="custom-file-control rounded-right">Choose File...</span>
                 </label>`
             }[selection];
+            var form = $(event.target).closest("form").attr("id") == "readEntry" ? $("#readEntry") : $("#submitEntry");
             // update the addon text
-            $("#entryType").html(selection);
+            form.find("[data-toggle='dropdown']").html(selection);
             // update the html
-            $("#entrySelectorDiv").find(".input-group-btn").next().replaceWith(inputHTML);
+            form.find(".input-group-btn").next().replaceWith(inputHTML);
             if (selection == "File") {
-                $("#entrySelectorDiv").find(".input-group-btn").next()
+                form.find(".input-group-btn").next()
                     .children("input").on('change', ProveIt.fileUploadListener);
             }
         },
@@ -564,8 +593,8 @@ $(function() {
     clipboard.on('error', ProveIt.clipboardError);
 
     // add event listeners
-    $("#entryInformationSubmit").on("click", ProveIt.entryInformation);
-    $("#entryToggle button").on('click', ProveIt.inputToggle);
+    $("#readEntry, #submitEntry").find(".nofocus").on("click", ProveIt.entryInformation);
+    $("#readEntry, #submitEntry").find(".dropdown-menu button").on('click', ProveIt.inputToggle);
     //$("#userEntriesSubmit").on("click", ProveIt.populateEntries);
 
     // initialize tooltips
