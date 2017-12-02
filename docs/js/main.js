@@ -67,6 +67,23 @@ ProveIt = (function($) {
             tabNames.map(x => {
                 $(`#${x}-tab`).addClass("disabled");
             });
+            // add tooltips explaining why disabled
+            if (tabNames.includes("submit")) {
+                $("#submit-tab")
+                    .attr("data-toggle", "tooltip")
+                    .attr("data-placement", "auto")
+                    .attr("data-trigger", "hover")
+                    .attr("title", "Submission is currently only supported via MetaMask.")
+                    .tooltip();
+            }
+            if (tabNames.includes("read")) {
+                $("#read-tab")
+                    .attr("data-toggle", "tooltip")
+                    .attr("data-placement", "auto")
+                    .attr("data-trigger", "hover")
+                    .attr("title", "Please ensure your Web3 provider if functioning correctly and try again.")
+                    .tooltip();
+            }
             $(`#${switchTo}-tab`).tab("show");
             return;
         },
@@ -438,6 +455,9 @@ ProveIt = (function($) {
         initializeWeb3: function() {
             if (typeof web3 !== 'undefined') {
                 window.web3 = new Web3(web3.currentProvider);
+                if (!web3.currentProvider.isMetaMask) {
+                    ProveIt.disable(["submit"], "read");
+                }
             } else {
                 window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/zKmHyEn4VwJ4in3cptiL"));
                 ProveIt.web3Status.defaultedToInfura = true;
@@ -501,7 +521,7 @@ ProveIt = (function($) {
                 }
             }
             if (ProveIt.web3Status.defaultedToInfura) {
-                changeButton("warning", `No Web3 provider detected, falling back to Infura. Consider installing MetaMask or using a DApp-friendly browser.`, ProveIt.web3Status.networkName);
+                changeButton("warning", `No Web3 provider detected, falling back to Infura. Consider installing MetaMask or using a ĐApp-friendly browser.`, ProveIt.web3Status.networkName);
             } else {
                 changeButton("success", `Web3 provider: ${ProveIt.web3Status.providerName}`, ProveIt.web3Status.networkName);
             }

@@ -23,6 +23,11 @@
     cursor: auto;
 }
 
+.custom-file-input {
+    max-width: 10rem;
+    overflow: hidden;
+}
+
 /* entry selector hover selection */
 .dropdown-menu > button:hover {
     background-color: #007bff;
@@ -36,7 +41,7 @@
     border-bottom-left-radius: 0;
 }
 
-/* scrollable anythings */
+/* scrollable divs */
 .scrollable {
     max-height: 300px;
     overflow-x: hidden;
