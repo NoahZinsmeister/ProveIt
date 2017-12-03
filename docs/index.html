@@ -96,13 +96,13 @@
           <h4 class="text-center mt-5">Prove It</h4>
           <form id="readEntry">
             <div class="form-row">
-              <div class="form-group col-lg-5">
+              <div class="form-group col-md-5">
                 <div class="input-group">
                   <div class="input-group-addon">Address</div>
                   <input type="text" class="form-control" placeholder="0x...">
                 </div>
               </div>
-              <div class="form-group col-lg-7">
+              <div class="form-group col-md-7">
                 <div class="input-group">
                   <div class="input-group-btn">
                     <button type="button" class="btn btn-secondary dropdown-toggle input-group-addon" data-toggle="dropdown">Entry Hash</button>
@@ -117,10 +117,10 @@
               </div>
             </div>
             <div class="form-row">
-              <div class="form-group col-lg-1">
-                <button type="button" class="h-100 btn-block btn btn-outline-primary nofocus">ProveIt</button>
+              <div class="text-center form-group col-md-2 col-xl-1">
+                <button type="button" class="h-100 btn-block btn btn-outline-primary nofocus cursor-pointer">ProveIt</button>
               </div>
-              <div class="form-group col-lg-11 mb-0 text-center">
+              <div class="form-group col mb-0 text-center">
                 <div class="alert alert-dark noselect" role="alert">
                   &nbsp;
                 </div>
@@ -144,13 +144,13 @@
           <h4 class="text-center mt-5">User Entries</h4>
           <form id="entriesForm">
             <div class="form-row">
-              <div class="form-group col-lg-11">
+              <div class="form-group col-md-11">
                 <div class="input-group">
                   <div class="input-group-addon">Address</div>
                   <input type="text" class="form-control" id="userEntriesAddress" placeholder="0x...">
                 </div>
               </div>
-              <div class="form-group col-lg-1">
+              <div class="form-group col-md-1">
                 <button type="button" class="btn btn-block btn-outline-primary nofocus" id="userEntriesSubmit">Query</button>
               </div>
             </div>
@@ -167,13 +167,7 @@
           <h4 class="text-center mt-5">Prove It</h4>
           <form id="submitEntry">
             <div class="form-row">
-              <div class="form-group col-lg-5">
-                <div class="input-group">
-                  <div class="input-group-addon">Amount (ETH)</div>
-                  <input type="text" class="form-control" placeholder="0">
-                </div>
-              </div>
-              <div class="form-group col-lg-7">
+              <div class="form-group col-md-8 col-xl-9">
                 <div class="input-group">
                   <div class="input-group-btn">
                     <button type="button" class="btn btn-secondary dropdown-toggle input-group-addon" data-toggle="dropdown">Entry Hash</button>
@@ -186,12 +180,18 @@
                   <input type="text" class="form-control" placeholder="0x...">
                 </div>
               </div>
+              <div class="form-group col-md-4 col-xl-3">
+                <div class="input-group">
+                  <div class="input-group-addon">Amount (ETH)</div>
+                  <input type="text" class="form-control" placeholder="0">
+                </div>
+              </div>
             </div>
             <div class="form-row">
-              <div class="form-group col-lg-1">
-                <button type="button" class="h-100 btn-block btn btn-outline-primary nofocus">Submit</button>
+              <div class="form-group col-md-2 col-xl-1">
+                <button type="button" class="h-100 btn-block btn btn-outline-primary nofocus cursor-pointer">Submit</button>
               </div>
-              <div class="form-group col-lg-11 mb-0 text-center">
+              <div class="form-group col mb-0 text-center">
                 <div class="alert alert-dark noselect" role="alert">
                   &nbsp;
                 </div>
@@ -202,10 +202,10 @@
         <!-- About tab-->
         <div class="tab-pane fade text-center" id="about" role="tabpanel">
           <blockquote class="blockquote text-center">
-            <p class="mt-5 mb-0">ProveIt enables individuals to lay claim to their history.</p>
+            <p class="mt-5 mb-0">ProveIt allows individuals to lay claim to their history.</p>
           </blockquote>
           <p class="text-left">ProveIt is a decentralized application (ĐApp for short) powered by <a target="_blank" class="nounderline" href="https://www.ethereum.org/">Ethereum</a>. It offers users a simple value proposition: the ability to prove that they said or possessed something, <em>anything</em>, without the need to rely on a trusted intermediary. This is an extraordinary and unprecedented phenomenon with implications for intellectual property rights, credibility in peer-to-peer networks, and much more.<br><br>Further information on ProveIt (including hypothetical use cases), and the entirety of the open-source codebase can be found on <a target="_blank" class="nounderline" href="https://github.com/NoahZinsmeister/ProveIt">Github</a>.</p>
-          <br><p class="h2 text-center">⟠</p>
+          <p class="h2 text-center">⟠</p>
         </div>
       </div>
     </div>

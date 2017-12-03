@@ -116,21 +116,27 @@ ProveIt = (function($) {
                 .removeClass("badge-primary badge-warning badge-error")
                 .addClass(badge);
             }
-            function userEntry(address, name) {
+            function userEntry(address, name, network) {
+                var newline = name == "" ? "": `<br><small><a target="_blank" href="https://${network}etherscan.io/enslookup?q=${name}" class="nounderline">${name}</a></small>`;
                 var out=`
-                <div class="list-group-item d-flex justify-content-between" role="tab">
-                <alert class="alert alert-light h-100 my-auto cursor-auto">
-                <a target="_blank" href="https://etherscan.io/address/${address}" class="my-auto nounderline">${address}</a>
-                <br><small><a target="_blank" href="https://etherscan.io/enslookup?q=${name}" class="my-auto nounderline">${name}</a></small>
-                </alert>
-                <button type="button" class="btn btn-outline-primary nofocus my-auto copyable cursor-pointer" data-clipboard-text="${address}">Copy</button>
+                <div class="list-group-item d-flex justify-content-between align-items-center flex-nowrap">
+                <div class="order-md-1 order-3">
+                <a target="_blank" href="https://${network}etherscan.io/address/${address}" class="nounderline">${address}</a>
+                ${newline}
+                </div>
+                <div class="order-md-2 order-2 mr-3"></div>
+                <button class="order-md-3 order-1 btn btn-outline-primary nofocus copyable cursor-pointer" data-clipboard-text="${address}">Copy</a>
                 </div>`;
                 return out;
             }
             function updateUsers (addresses, names) {
                 var entries = [];
+                var network = {
+                    "Mainnet": "",
+                    "Rinkeby (proof-of-authority)": "rinkeby.",
+                    "Ropsten (test)": "ropsten."}[ProveIt.web3Status.networkName];
                 for (let i=0; i < addresses.length; i++) {
-                    entries.push(userEntry(addresses[i], names[i]));
+                    entries.push(userEntry(addresses[i], names[i], network));
                 }
                 // populate users
                 $("#masterUserParent").html(entries.join(""));
@@ -162,9 +168,10 @@ ProveIt = (function($) {
                 }
             });
         },
-
+        /*
         populateEntries: function (event) {
-            // form validation
+            // variable identification
+            var address, amount,
             var address = $("#userEntriesAddress").val();
 
             if (! web3.isAddress(address)) {
@@ -216,13 +223,16 @@ ProveIt = (function($) {
                 }
             });
         },
-
+        */
         entryInformation: function (event) {
             function stateChange(text, state) {
                 var classes;
                 switch (state) {
                     case "proven":
                         classes = "alert-success";
+                        break;
+                    case "info":
+                        classes = "alert-info";
                         break;
                     case "error":
                         classes = "alert-danger noselect";
@@ -236,7 +246,7 @@ ProveIt = (function($) {
                 }
 
                 form.find("[role='alert']")
-                    .removeClass("alert-dark alert-danger alert-success alert-warning noselect")
+                    .removeClass("alert-info alert-dark alert-danger alert-success alert-warning noselect")
                     .addClass(classes)
                     .html(text);
             }
@@ -244,49 +254,101 @@ ProveIt = (function($) {
             var form = $(event.target).html() == "ProveIt" ? $("#readEntry") : $("#submitEntry");
 
             // form validation
-            var address = form.find(".form-control").first().val();
-            var entryType = form.find("[data-toggle='dropdown']").html();
-
-            function validHash() {
-                // TODO implement validity checks here.
-                // hash.substring(0, 2) == "0x" && hash.length == 66;
-                return true;
+            var address, amount;
+            if (form.attr("id") == "readEntry") {
+                address = form.find(".form-group:eq(0)").find(".form-control:eq(0)");
+            } else {
+                amount = form.find(".form-group:eq(1)").find(".form-control:eq(0)");
             }
-            /* turning off validation again b/c of annoying address/amount thing
-            if (! (web3.isAddress(address) & validHash())) {
-                event.preventDefault();
-                event.stopPropagation();
-                if (! web3.isAddress(address)) {
-                    form.find(".form-control").first().addClass('is-invalid');
+            var entryType = form.find("[data-toggle='dropdown']").first().html();
+            // get the tag containing the "entry" input
+            if (entryType == "File") {
+                entry = form.find(".custom-file-input");
+            } else {
+                if (form.attr("id") == "readEntry") {
+                    entry = form.find(".form-group:eq(1)").find(".form-control:eq(0)");
+                } else {
+                    entry = form.find(".form-group:eq(0)").find(".form-control:eq(0)");
                 }
+            }
+
+            // validate all relevant fields
+            function validateEntries() {
+                var allPassed = true;
+                function passed(node, valid) {
+                    node.removeClass("is-valid is-invalid");
+                    if (valid) {
+                        node.addClass("is-valid");
+                    } else {
+                        node.addClass("is-invalid");
+                        allPassed = false;
+                    }
+                }
+                // validate address
+                if (typeof address !== 'undefined') {
+                    if (web3.isAddress(address.val())) {
+                        passed(address, true);
+                    } else {
+                        passed(address, false);
+                    }
+                }
+                // validate amount
+                if (typeof amount !== 'undefined') {
+                    if ((!isNaN(+amount.val())) & amount.val() != "") {
+                        passed(amount, true);
+                    } else {
+                        passed(amount, false);
+                    }
+                }
+
+                // validate entry
+                switch (entryType) {
+                    case "Entry Hash":
+                        if (entry.val().substring(0, 2) == "0x" & entry.val().length == 66) {
+                            passed(entry, true);
+                        } else {
+                            passed(entry, false);
+                        }
+                        break;
+                    case "Text":
+                        if (entry.val().length >= 1) {
+                            passed(entry, true);
+                        } else {
+                            passed(entry, false);
+                        }
+                        break;
+                    case "File":
+                        if (entry[0].files.length == 1) {
+                            passed(entry, true);
+                        } else {
+                            passed(entry, false);
+                        }
+                        break;
+                }
+                return allPassed;
+            }
+            // if at least one invalid entry
+            if (! validateEntries()) {
                 stateChange("&nbsp;", "default");
                 return;
-            } else {
-                form.find(".form-control").first().removeClass("is-invalid").addClass('is-valid');
-            } */
+            }
 
             stateChange("Loading...", "default");
 
             var hash;
             switch (entryType) {
                 case "Entry Hash":
-                    hash = form.find("input:eq(1)").val();
+                    hash = entry.val();
                     parseResult();
                     break;
                 case "Text":
-                    hash = ProveIt.hashText(form.find("input:eq(1)").val());
+                    hash = ProveIt.hashText(entry.val());
                     parseResult();
                     break;
                 case "File":
-                    var fileList = form.find(".custom-file-input")[0].files;
-                    if (fileList.length !== 1) {
-                        stateChange("Please select 1 and only 1 file.", "error");
-                        return;
-                    }
-                    var file = fileList[0];
-                    ProveIt.hashFile(file).then(hashResolved => {
+                    ProveIt.hashFile(entry[0].files[0]).then(hashResolved => {
                         $("#fileHashModalButton")
-                            .removeClass("btn-outline-danger")
+                            .removeClass("btn-outline-success btn-outline-danger")
                             .addClass("btn-outline-success")
                             .html("Success");
                         hash = hashResolved;
@@ -299,9 +361,9 @@ ProveIt = (function($) {
                     break;
             }
 
-            function parseResult (parseType) {
+            function parseResult () {
                 if (form.attr("id") == "readEntry") {
-                    ProveIt.Prover.entryInformation.call(address, hash, function (error, entryInfo) {
+                    ProveIt.Prover.entryInformation.call(address.val(), hash, function (error, entryInfo) {
                         if (error) {
                             stateChange("Error.", "warning");
                             console.log(error);
@@ -332,24 +394,55 @@ ProveIt = (function($) {
                         }
                     });
                 } else {
-                    // note that address here is amount - fixing soon ofc
+                    // check if matamask acct needs to be unlocked
+                    if (typeof ProveIt.web3Status.account == "undefined") {
+                        stateChange("Please unlock your MetaMask account.", "warning");
+                    }
                     var data = [];
                     // add function signature
                     data.push(web3.sha3("addEntry(bytes32)").substring(0, 10));
                     // add argument (no need to pad, it's already 32 bytes)
                     data.push(hash.substring(2));
                     data = data.join("");
+                    console.log();
                     web3.eth.sendTransaction({
                         from: ProveIt.web3Status.account,
                         to: ProveIt.Prover.address,
-                        value: web3.toWei(Number(address), "ether"),
+                        value: web3.toWei(+amount.val(), "ether"),
+                        gas: 400000,
+                        gasPrice: web3.toWei(5, "gwei"),
                         data: data,
-                    }, function (error, transactionHash) {
+                    }, function (error, txHash) {
                         if (error) {
                             console.log(error);
                             stateChange("Error.", "error");
                         } else {
-                            stateChange(`Tx hash: ${transactionHash}`, "proven");
+                            var network = {
+                                "Mainnet": "",
+                                "Rinkeby (proof-of-authority)": "rinkeby.",
+                                "Ropsten (test)": "ropsten."}[ProveIt.web3Status.networkName];
+                            var txLink = `<a target="_blank" href="https://${network}etherscan.io/tx/${txHash}" class="nounderline">${txHash}</a>`;
+                            stateChange(`Transaction Hash: ${txLink}`, "info");
+                            /*
+                            var isMined = new Promise((resolve, reject) => {
+                                function mined() {
+                                    if (web3.eth.getTransaction(txHash, function(error, txInfo) {
+                                        return (error | txInfo.blockHash == null) ? false : true;
+                                    });
+                                }
+                                // add event listener for modal close, which cancels the promise
+                                $("#fileHashModal").one('hide.bs.modal', function (event) {
+                                    reject("File upload cancelled.");
+                                });
+                                $("#fileHashModal").modal('show');
+                                // start parsing the file
+                                ProveIt.parseFile(file, {
+                                    "errorCallback": errorCallback,
+                                    "chunkCallback": chunkCallback,
+                                    "finishedCallback": finishedCallback
+                                });
+                            });
+                            */
                         }
                     });
                 }
@@ -378,9 +471,9 @@ ProveIt = (function($) {
             // reset the modal
             $("#progressBar").style = "width: 0%";
             $("#fileHashModalButton")
-            .removeClass("btn-success")
-            .addClass("btn-danger")
-            .html("Cancel");
+                .removeClass("btn-success")
+                .addClass("btn-danger")
+                .html("Cancel");
 
             return new Promise((resolve, reject) => {
                 // add hashed listener to modal
@@ -461,7 +554,7 @@ ProveIt = (function($) {
             } else {
                 window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/zKmHyEn4VwJ4in3cptiL"));
                 ProveIt.web3Status.defaultedToInfura = true;
-                ProveIt.disable(["submit"], "read");
+                //ProveIt.disable(["submit"], "read");
             }
             ProveIt.web3CheckOnce();
             ProveIt.web3CheckMany();
