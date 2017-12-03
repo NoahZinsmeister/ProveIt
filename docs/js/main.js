@@ -554,7 +554,7 @@ ProveIt = (function($) {
             } else {
                 window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/zKmHyEn4VwJ4in3cptiL"));
                 ProveIt.web3Status.defaultedToInfura = true;
-                //ProveIt.disable(["submit"], "read");
+                ProveIt.disable(["submit"], "read");
             }
             ProveIt.web3CheckOnce();
             ProveIt.web3CheckMany();
