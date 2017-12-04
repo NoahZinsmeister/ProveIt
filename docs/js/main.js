@@ -1,16 +1,6 @@
 /*jshint esversion: 6 */
 ProveIt = (function($) {
     return {
-        supportsES6: function() {
-            try {
-                new Function("(a = 0) => a");
-                return true;
-            }
-                catch (err) {
-                    return false;
-            }
-        },
-
         web3Status: {"supportedNetworks": ["Mainnet", "Rinkeby (proof-of-authority)", "Ropsten (test)"]},
 
         changeTooltipTitle: function (tooltip, text) {
@@ -708,10 +698,6 @@ ProveIt = (function($) {
 // DOM-dependent code
 $(function() {
     ProveIt.DOMReady = true;
-    if (!supportsES6()) {
-        alert("Please visit from a modern browser that supports ES6.");
-        ProveIt.disable(["read", "submit"]);
-    }
     // clipboard functionality
     var clipboard = new Clipboard('.copyable', {
         text: function(trigger) {
