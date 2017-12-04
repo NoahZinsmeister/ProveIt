@@ -1,6 +1,16 @@
 /*jshint esversion: 6 */
 ProveIt = (function($) {
     return {
+        supportsES6: function() {
+            try {
+                new Function("(a = 0) => a");
+                return true;
+            }
+                catch (err) {
+                    return false;
+            }
+        },
+
         web3Status: {"supportedNetworks": ["Mainnet", "Rinkeby (proof-of-authority)", "Ropsten (test)"]},
 
         changeTooltipTitle: function (tooltip, text) {
@@ -63,17 +73,19 @@ ProveIt = (function($) {
             readChunk();
         },
 
-        disable: function (tabNames, switchTo="about") {
+        disable: function (tabNames, switchTo="about", messages={}) {
             tabNames.map(x => {
                 $(`#${x}-tab`).addClass("disabled");
             });
+            var submitMessage = "submit" in messages ? messages.submit : "Submission is currently only supported via MetaMask.";
+            var readMessage = "read" in messages ? messages.read : "Please ensure your Web3 provider if functioning correctly and try again.";
             // add tooltips explaining why disabled
             if (tabNames.includes("submit")) {
                 $("#submit-tab")
                     .attr("data-toggle", "tooltip")
                     .attr("data-placement", "auto")
                     .attr("data-trigger", "hover")
-                    .attr("title", "Submission is currently only supported via MetaMask.")
+                    .attr("title", submitMessage)
                     .tooltip();
             }
             if (tabNames.includes("read")) {
@@ -81,7 +93,7 @@ ProveIt = (function($) {
                     .attr("data-toggle", "tooltip")
                     .attr("data-placement", "auto")
                     .attr("data-trigger", "hover")
-                    .attr("title", "Please ensure your Web3 provider if functioning correctly and try again.")
+                    .attr("title", readMessage)
                     .tooltip();
             }
             $(`#${switchTo}-tab`).tab("show");
@@ -696,6 +708,10 @@ ProveIt = (function($) {
 // DOM-dependent code
 $(function() {
     ProveIt.DOMReady = true;
+    if (!supportsES6()) {
+        alert("Please visit from a modern browser that supports ES6.");
+        ProveIt.disable(["read", "submit"]);
+    }
     // clipboard functionality
     var clipboard = new Clipboard('.copyable', {
         text: function(trigger) {
