@@ -65,26 +65,29 @@ ProveIt = (function($) {
 
         disable: function (tabNames, switchTo="about", messages={}) {
             tabNames.map(x => {
-                $(`#${x}-tab`).addClass("disabled");
+                $(`#${x}-tab`).addClass("disabled").removeAttr("href");
             });
-            var submitMessage = "submit" in messages ? messages.submit : "Submission is currently only supported via MetaMask.";
-            var readMessage = "read" in messages ? messages.read : "Please ensure your Web3 provider if functioning correctly and try again.";
+            var submitMessage = "submit" in messages ? messages.submit : "To submit an entry to ProveIt, you'll need to send a transaction to the Ethereum blockchain. To get started, download the secure digital wallet <a target='_blank' href='https://metamask.io/' class='nounderline'>MetaMask</a>, and load it up with some Ether.";
+            var readMessage = "read" in messages ? messages.read : "Your Web3 provider, the service that lets your browser connect to the Ethereum blockchain, seems to be malfunctioning. Please refresh the page and try again.";
             // add tooltips explaining why disabled
             if (tabNames.includes("submit")) {
                 $("#submit-tab")
-                    .attr("data-toggle", "tooltip")
+                    .attr("data-toggle", "popover")
                     .attr("data-placement", "auto")
-                    .attr("data-trigger", "hover")
-                    .attr("title", submitMessage)
-                    .tooltip();
+                    .attr("data-trigger", "click")
+                    .addClass("cursor-pointer")
+                    .attr("title", "Submitting Disabled")
+                    .attr("data-content", submitMessage)
+                    .popover({"html": true});
             }
             if (tabNames.includes("read")) {
                 $("#read-tab")
-                    .attr("data-toggle", "tooltip")
+                    .attr("data-toggle", "popover")
                     .attr("data-placement", "auto")
-                    .attr("data-trigger", "hover")
+                    .attr("data-trigger", "hover click")
+                    .attr("title", "Reading Disabled.")
                     .attr("title", readMessage)
-                    .tooltip();
+                    .popover({"html": true});
             }
             $(`#${switchTo}-tab`).tab("show");
             return;
@@ -525,6 +528,7 @@ ProveIt = (function($) {
         clipboardSuccess: function (event) {
             ProveIt.changeTooltipTitle(event.trigger, "Copied!");
             $(event.trigger).one('shown.bs.tooltip', function () {
+                ProveIt.changeTooltipTitle(this, "");
                 $(this).tooltip("disable");
             });
             $(event.trigger).tooltip("enable").tooltip("show");
@@ -533,6 +537,7 @@ ProveIt = (function($) {
         clipboardError: function (event) {
             ProveIt.changeTooltipTitle(event.trigger, "An error occured, please copy manually.");
             $(event.trigger).one('shown.bs.tooltip', function () {
+                ProveIt.changeTooltipTitle(this, "");
                 $(this).tooltip("disable");
             });
             $(event.trigger).tooltip("enable").tooltip("show");
@@ -592,33 +597,31 @@ ProveIt = (function($) {
 
         updateWeb3Tooltip: function () {
             function changeButton(status, tooltipText, innerText="Web3") {
-                ProveIt.changeTooltipTitle($("#web3Button"), tooltipText);
                 var possibleStates = "btn-outline-success btn-outline-danger btn-outline-secondary btn-outline-warning";
+                var newClass;
                 switch (status) {
                     case "success":
-                        $("#web3Button")
-                            .removeClass(possibleStates)
-                            .addClass("btn-outline-success")
-                            .html(innerText);
-                    break;
+                        newClass = "btn-outline-success";
+                        break;
                     case "warning":
-                        $("#web3Button")
-                            .removeClass(possibleStates)
-                            .addClass("btn-outline-warning")
-                            .html(innerText);
-                    break;
+                        newClass = "btn-outline-warning";
+                        break;
                     case "danger":
-                        $("#web3Button")
-                        .removeClass(possibleStates)
-                            .addClass("btn-outline-danger")
-                            .html(innerText);
+                        newClass = "btn-outline-danger";
                         break;
                 }
+                $("#web3Button")
+                .removeClass(possibleStates)
+                    .addClass(newClass)
+                    .attr("title", "Web3 Provider Status")
+                    .attr("data-content", tooltipText)
+                    .html(innerText)
+                    .popover({"html": true});
             }
             if (ProveIt.web3Status.defaultedToInfura) {
-                changeButton("warning", `No Web3 provider detected, falling back to Infura. Consider installing MetaMask or using a ĐApp-friendly browser.`, ProveIt.web3Status.networkName);
+                changeButton("warning", `No Web3 provider detected. This means that your browser is unable to communicate with the Ethereum blockchain, which is how ProveIt operates. ProveIt has fallen back to a read-only state; if you'd like to submit an entry, consider installing <a target='_blank' href='https://metamask.io/' class='nounderline'>MetaMask</a> or using a <a target='_blank' href='https://brave.com' class='nounderline'>ĐApp-friendly browser</a>.`, ProveIt.web3Status.networkName);
             } else {
-                changeButton("success", `Web3 provider: ${ProveIt.web3Status.providerName}`, ProveIt.web3Status.networkName);
+                changeButton("success", `Congratulations, you're connected! You're plugged into the Ethereum <strong>${ProveIt.web3Status.networkName}</strong> network, courtesy of <strong>${ProveIt.web3Status.providerName}</strong>.`, ProveIt.web3Status.networkName);
             }
         },
 
