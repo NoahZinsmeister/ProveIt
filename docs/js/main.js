@@ -67,7 +67,7 @@ ProveIt = (function($) {
             tabNames.map(x => {
                 $(`#${x}-tab`).addClass("disabled").removeAttr("href");
             });
-            var submitMessage = "submit" in messages ? messages.submit : "To submit an entry to ProveIt, you'll need to send a transaction to the Ethereum blockchain. To get started, download the secure digital wallet <a target='_blank' href='https://metamask.io/' class='nounderline'>MetaMask</a>, and load it up with some Ether.";
+            var submitMessage = "submit" in messages ? messages.submit : "To submit an entry to ProveIt, you'll need to be able to send a transaction to the Ethereum blockchain. To get started, download the secure digital wallet <a target='_blank' href='https://metamask.io/' class='nounderline'>MetaMask</a>, and load it up with some Ether.";
             var readMessage = "read" in messages ? messages.read : "Your Web3 provider, the service that lets your browser connect to the Ethereum blockchain, seems to be malfunctioning. Please refresh the page and try again.";
             // add tooltips explaining why disabled
             if (tabNames.includes("submit")) {
