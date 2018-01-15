@@ -22,7 +22,7 @@ ProveIt = (function($) {
             var chunkCallback = defaulter('chunkCallback', function() {});
             var finishedCallback = defaulter('finishedCallback', function() {});
             var binary = defaulter('binary', true);
-            var bytesPerChunk = defaulter('bytesPerChunk', Math.pow(2, 8) * Math.pow(2, 10)); //.25 megabytes
+            var bytesPerChunk = defaulter('bytesPerChunk', Math.pow(1024, 2)) / 4; //.25 MiB
             var singleChunk = defaulter('singleChunk', false);
 
             var fileSize = file.size;
@@ -67,8 +67,9 @@ ProveIt = (function($) {
             tabNames.map(x => {
                 $(`#${x}-tab`).addClass("disabled").removeAttr("href");
             });
-            var submitMessage = "submit" in messages ? messages.submit : "To submit an entry to ProveIt, you'll need to be able to send a transaction to the Ethereum blockchain. To get started, download the secure digital wallet <a target='_blank' href='https://metamask.io/' class='nounderline'>MetaMask</a>, and load it up with some Ether.";
+            var proveMessage = "prove" in messages ? messages.prove : "Your Web3 provider, the service that lets your browser connect to the Ethereum blockchain, seems to be malfunctioning. Please refresh the page and try again.";
             var readMessage = "read" in messages ? messages.read : "Your Web3 provider, the service that lets your browser connect to the Ethereum blockchain, seems to be malfunctioning. Please refresh the page and try again.";
+            var submitMessage = "submit" in messages ? messages.submit : "To submit an entry to ProveIt, you'll need to be able to send a transaction to the Ethereum blockchain. To get started, download the secure digital wallet <a target='_blank' href='https://metamask.io/' class='nounderline'>MetaMask</a>, and load it up with enough Ether to cover a transaction or two (~$20 should do the trick).";
             // add tooltips explaining why disabled
             if (tabNames.includes("submit")) {
                 $("#submit-tab")
@@ -87,6 +88,15 @@ ProveIt = (function($) {
                     .attr("data-trigger", "hover click")
                     .attr("title", "Reading Disabled.")
                     .attr("title", readMessage)
+                    .popover({"html": true});
+            }
+            if (tabNames.includes("prove")) {
+                $("#prove-tab")
+                    .attr("data-toggle", "popover")
+                    .attr("data-placement", "auto")
+                    .attr("data-trigger", "hover click")
+                    .attr("title", "Proving Disabled.")
+                    .attr("title", proveMessage)
                     .popover({"html": true});
             }
             $(`#${switchTo}-tab`).tab("show");
@@ -114,13 +124,14 @@ ProveIt = (function($) {
             });
         },
 
-        autoPopulate: function () {
+        allUsers: function () {
             function changeBadge(text, badge) {
                 $("#usersBadge")
                 .html(text)
                 .removeClass("badge-primary badge-warning badge-error")
                 .addClass(badge);
             }
+
             function userEntry(address, name, network) {
                 var newline = name == "" ? "": `<br><small><a target="_blank" href="https://${network}etherscan.io/enslookup?q=${name}" class="nounderline">${name}</a></small>`;
                 var out=`
@@ -134,6 +145,7 @@ ProveIt = (function($) {
                 </div>`;
                 return out;
             }
+
             function updateUsers (addresses, names) {
                 var entries = [];
                 var network = {
@@ -155,8 +167,8 @@ ProveIt = (function($) {
             changeBadge("Loading...", "badge-warning");
             ProveIt.Prover.registeredUsers.call(function (error, users) {
                 if (error) {
-                    changeBadge("Error", "badge-danger");
                     console.log(error);
+                    changeBadge("Error", "badge-danger");
                 } else {
                     var usersChecksummed = users.map(x => web3.toChecksumAddress(x));
                     Promise.all(users.map(x => {
@@ -167,8 +179,8 @@ ProveIt = (function($) {
                     }))
                     .then(ENSNamesResolved => updateUsers(usersChecksummed, ENSNamesResolved))
                     .catch(error => {
-                        changeBadge("Error", "badge-danger");
                         console.log(error);
+                        changeBadge("Error", "badge-danger");
                     });
                 }
             });
@@ -229,52 +241,42 @@ ProveIt = (function($) {
             });
         },
         */
-        entryInformation: function (event) {
-            function stateChange(text, state) {
-                var classes;
-                switch (state) {
-                    case "proven":
-                        classes = "alert-success";
-                        break;
-                    case "info":
-                        classes = "alert-info";
-                        break;
-                    case "error":
-                        classes = "alert-danger noselect";
-                        break;
-                    case "default":
-                        classes = "alert-dark noselect";
-                        break;
-                    case "warning":
-                        classes = "alert-warning noselect";
-                        break;
-                }
-
-                form.find("[role='alert']")
-                    .removeClass("alert-info alert-dark alert-danger alert-success alert-warning noselect")
-                    .addClass(classes)
-                    .html(text);
+        stateChange: function (alert, text, state) {
+            var classes;
+            switch (state) {
+                case "proven":
+                    classes = "alert-success";
+                    break;
+                case "info":
+                    classes = "alert-info";
+                    break;
+                case "error":
+                    classes = "alert-danger noselect";
+                    break;
+                case "default":
+                    classes = "alert-dark noselect";
+                    break;
+                case "warning":
+                    classes = "alert-warning noselect";
+                    break;
             }
+            alert
+                .removeClass("alert-info alert-dark alert-danger alert-success alert-warning noselect")
+                .addClass(classes)
+                .html(text);
+        },
 
-            var form = $(event.target).html() == "ProveIt" ? $("#readEntry") : $("#submitEntry");
+        entryInformation: function (event) {
+            var form = $("#proveEntry");
 
             // form validation
-            var address, amount;
-            if (form.attr("id") == "readEntry") {
-                address = form.find(".form-group:eq(0)").find(".form-control:eq(0)");
-            } else {
-                amount = form.find(".form-group:eq(1)").find(".form-control:eq(0)");
-            }
+            var address = form.find(".form-group:eq(0)").find(".form-control:eq(0)");
             var entryType = form.find("[data-toggle='dropdown']").first().html();
-            // get the tag containing the "entry" input
+            // get the tag containing the entry input
             if (entryType == "File") {
                 entry = form.find(".custom-file-input");
             } else {
-                if (form.attr("id") == "readEntry") {
-                    entry = form.find(".form-group:eq(1)").find(".form-control:eq(0)");
-                } else {
-                    entry = form.find(".form-group:eq(0)").find(".form-control:eq(0)");
-                }
+                entry = form.find(".form-group:eq(1)").find(".form-control:eq(0)");
             }
 
             // validate all relevant fields
@@ -290,31 +292,14 @@ ProveIt = (function($) {
                     }
                 }
                 // validate address
-                if (typeof address !== 'undefined') {
-                    if (web3.isAddress(address.val())) {
-                        passed(address, true);
-                    } else {
-                        passed(address, false);
-                    }
-                }
-                // validate amount
-                if (typeof amount !== 'undefined') {
-                    if ((!isNaN(+amount.val())) & amount.val() != "") {
-                        passed(amount, true);
-                    } else {
-                        passed(amount, false);
-                    }
+                if (web3.isAddress(address.val())) {
+                    passed(address, true);
+                } else {
+                    passed(address, false);
                 }
 
                 // validate entry
                 switch (entryType) {
-                    case "Entry Hash":
-                        if (entry.val().substring(0, 2) == "0x" & entry.val().length == 66) {
-                            passed(entry, true);
-                        } else {
-                            passed(entry, false);
-                        }
-                        break;
                     case "Text":
                         if (entry.val().length >= 1) {
                             passed(entry, true);
@@ -329,128 +314,311 @@ ProveIt = (function($) {
                             passed(entry, false);
                         }
                         break;
+                    case "Hash":
+                        if (entry.val().substring(0, 2) == "0x" & entry.val().length == 66) {
+                            passed(entry, true);
+                        } else {
+                            passed(entry, false);
+                        }
+                        break;
                 }
                 return allPassed;
             }
             // if at least one invalid entry
             if (! validateEntries()) {
-                stateChange("&nbsp;", "default");
+                ProveIt.stateChange(form.find("[role='alert']"), "&nbsp;", "default");
                 return;
             }
 
-            stateChange("Loading...", "default");
+            ProveIt.stateChange(form.find("[role='alert']"), "Loading...", "default");
 
             var hash;
             switch (entryType) {
-                case "Entry Hash":
-                    hash = entry.val();
-                    parseResult();
-                    break;
                 case "Text":
                     hash = ProveIt.hashText(entry.val());
-                    parseResult();
+                    parseResult(hash);
                     break;
                 case "File":
                     ProveIt.hashFile(entry[0].files[0]).then(hashResolved => {
-                        $("#fileHashModalButton")
-                            .removeClass("btn-outline-success btn-outline-danger")
-                            .addClass("btn-outline-success")
-                            .html("Success");
-                        hash = hashResolved;
-                        parseResult();
+                        $("#fileHashModal").one('hide.bs.modal', function() {parseResult(hashResolved);});
                     }).catch(error => {
-                        $("#fileHashModal").modal('hide');
-                        stateChange(error, "error");
+                        console.log(error);
+                        ProveIt.stateChange(form.find("[role='alert']"), "Error.", "warning");
                         return;
                     });
                     break;
+                case "Hash":
+                    hash = entry.val();
+                    parseResult(hash);
+                    break;
             }
 
-            function parseResult () {
-                if (form.attr("id") == "readEntry") {
-                    ProveIt.Prover.entryInformation.call(address.val(), hash, function (error, entryInfo) {
-                        if (error) {
-                            stateChange("Error.", "warning");
-                            console.log(error);
-                            return;
+            function parseResult (hash) {
+                ProveIt.Prover.entryInformation.call(address.val(), hash, function (error, entryInfo) {
+                    if (error) {
+                        console.log(error);
+                        ProveIt.stateChange(form.find("[role='alert']"), "Error.", "warning");
+                        return;
+                    } else {
+                        if (entryInfo[0]) {
+                            var displayString = [];
+                            displayString.push("Submitted on");
+                            var date = new Date(entryInfo[1].toNumber() * 1000);
+                            displayString.push(date.toLocaleString("en-US", {
+                                timeZone: "UTC",
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'}));
+                            displayString.push("at");
+                            displayString.push(date.toLocaleString("en-US", {
+                                timeZone: "UTC",
+                                hour12: false,
+                                hour: "numeric",
+                                minute: "numeric",
+                                timeZoneName: "short"}));
+                            displayString.push("against");
+                            displayString.push(web3.fromWei(entryInfo[2].toNumber(), "ether"));
+                            displayString.push("ETH.");
+                            ProveIt.stateChange(form.find("[role='alert']"), displayString.join(" "), "proven");
                         } else {
-                            if (entryInfo[0]) {
-                                var date = new Date(entryInfo[1].toNumber() * 1000);
-                                var displayString = [];
-                                displayString.push("Submitted on");
-                                displayString.push(date.toLocaleString("en-US", {
-                                    timeZone: "UTC",
-                                    hour12: false,
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'}));
-                                displayString.push("at");
-                                displayString.push(date.toLocaleString("en-US", {
-                                    timeZone: "UTC",
-                                    hour12: false,
-                                    hour: "numeric",
-                                    minute: "numeric",
-                                    timeZoneName: "short"}));
-                                displayString.push("against " + web3.fromWei(entryInfo[2].toNumber(), "ether") + " ETH.");
-                                stateChange(displayString.join(" "), "proven");
-                            } else {
-                                stateChange("Unproven.", "error");
-                            }
+                            ProveIt.stateChange(form.find("[role='alert']"), "Unproven.", "error");
                         }
-                    });
-                } else {
-                    // check if matamask acct needs to be unlocked
-                    if (typeof ProveIt.web3Status.account == "undefined") {
-                        stateChange("Please unlock your MetaMask account.", "warning");
                     }
-                    var data = [];
-                    // add function signature
-                    data.push(web3.sha3("addEntry(bytes32)").substring(0, 10));
-                    // add argument (no need to pad, it's already 32 bytes)
-                    data.push(hash.substring(2));
-                    data = data.join("");
-                    console.log();
-                    web3.eth.sendTransaction({
-                        from: ProveIt.web3Status.account,
-                        to: ProveIt.Prover.address,
-                        value: web3.toWei(+amount.val(), "ether"),
-                        gas: 400000,
-                        gasPrice: web3.toWei(5, "gwei"),
-                        data: data,
-                    }, function (error, txHash) {
-                        if (error) {
-                            console.log(error);
-                            stateChange("Error.", "error");
-                        } else {
-                            var network = {
-                                "Mainnet": "",
-                                "Rinkeby (proof-of-authority)": "rinkeby.",
-                                "Ropsten (test)": "ropsten."}[ProveIt.web3Status.networkName];
-                            var txLink = `<a target="_blank" href="https://${network}etherscan.io/tx/${txHash}" class="nounderline">${txHash}</a>`;
-                            stateChange(`Transaction Hash: ${txLink}`, "info");
-                            /*
-                            var isMined = new Promise((resolve, reject) => {
-                                function mined() {
-                                    if (web3.eth.getTransaction(txHash, function(error, txInfo) {
-                                        return (error | txInfo.blockHash == null) ? false : true;
-                                    });
-                                }
-                                // add event listener for modal close, which cancels the promise
-                                $("#fileHashModal").one('hide.bs.modal', function (event) {
-                                    reject("File upload cancelled.");
-                                });
-                                $("#fileHashModal").modal('show');
-                                // start parsing the file
-                                ProveIt.parseFile(file, {
-                                    "errorCallback": errorCallback,
-                                    "chunkCallback": chunkCallback,
-                                    "finishedCallback": finishedCallback
-                                });
-                            });
-                            */
-                        }
-                    });
+                });
+            }
+        },
+
+        submitEntry: function (event) {
+            var form = $("#submitEntry");
+
+            // form validation
+            var amount = form.find(".form-group:eq(1)").find(".form-control:eq(0)");
+            var entryType = form.find("[data-toggle='dropdown']").first().html();
+            // get the tag containing the entry input
+            if (entryType == "File") {
+                entry = form.find(".custom-file-input");
+            } else {
+                entry = form.find(".form-group:eq(0)").find(".form-control:eq(0)");
+            }
+
+            // validate all relevant fields
+            function validateEntries() {
+                var allPassed = true;
+                function passed(node, valid) {
+                    node.removeClass("is-valid is-invalid");
+                    if (valid) {
+                        node.addClass("is-valid");
+                    } else {
+                        node.addClass("is-invalid");
+                        allPassed = false;
+                    }
                 }
+                // validate amount
+                if ((!isNaN(+amount.val())) & amount.val() != "") {
+                    passed(amount, true);
+                } else {
+                    passed(amount, false);
+                }
+
+                // validate entry
+                switch (entryType) {
+                    case "Text":
+                        if (entry.val().length >= 1) {
+                            passed(entry, true);
+                        } else {
+                            passed(entry, false);
+                        }
+                        break;
+                    case "File":
+                        if (entry[0].files.length == 1) {
+                            passed(entry, true);
+                        } else {
+                            passed(entry, false);
+                        }
+                        break;
+                    case "Hash":
+                        if (entry.val().substring(0, 2) == "0x" & entry.val().length == 66) {
+                            passed(entry, true);
+                        } else {
+                            passed(entry, false);
+                        }
+                        break;
+                }
+                return allPassed;
+            }
+            // if at least one invalid entry
+            if (! validateEntries()) {
+                ProveIt.stateChange(form.find("[role='alert']"), "&nbsp;", "default");
+                return;
+            }
+
+            ProveIt.stateChange(form.find("[role='alert']"), "Loading...", "default");
+
+            var hash;
+            switch (entryType) {
+                case "Text":
+                    hash = ProveIt.hashText(entry.val());
+                    parseResult(hash);
+                    break;
+                case "File":
+                    ProveIt.hashFile(entry[0].files[0]).then(hashResolved => {
+                        $("#fileHashModal").one('hide.bs.modal', function() {parseResult(hashResolved);});
+                    }).catch(error => {
+                        console.log(error);
+                        ProveIt.stateChange(form.find("[role='alert']"), "Error.", "warning");
+                        return;
+                    });
+                    break;
+                case "Hash":
+                    hash = entry.val();
+                    parseResult(hash);
+                    break;
+            }
+
+            function parseResult (hash) {
+                // check if metamask acct needs to be unlocked
+                if (typeof ProveIt.web3Status.account == "undefined") {
+                    ProveIt.stateChange(form.find("[role='alert']"), "Please unlock your MetaMask account.", "warning");
+                }
+
+                var data = [];
+                // add function signature
+                data.push(web3.sha3("addEntry(bytes32)").substring(0, 10));
+                // add argument (no need to pad, it's already 32 bytes)
+                data.push(hash.substring(2));
+                data = data.join("");
+                web3.eth.sendTransaction({
+                    from: ProveIt.web3Status.account,
+                    to: ProveIt.Prover.address,
+                    value: web3.toWei(+amount.val(), "ether"),
+                    gas: 400000,
+                    data: data
+                }, function (error, txHash) {
+                    if (error) {
+                        console.log(error);
+                        ProveIt.stateChange(form.find("[role='alert']"), "Error.", "error");
+                    } else {
+                        var network = {
+                            "Mainnet": "",
+                            "Rinkeby (proof-of-authority)": "rinkeby.",
+                            "Ropsten (test)": "ropsten."}[ProveIt.web3Status.networkName];
+                        var txLink = `<a target="_blank" href="https://${network}etherscan.io/tx/${txHash}" class="nounderline">${txHash}</a>`;
+                        ProveIt.stateChange(form.find("[role='alert']"), `Transaction Hash: ${txLink}`, "info");
+                    }
+                });
+            }
+        },
+
+        removeEntry: function (event) {
+            var form = $("#removeEntry");
+
+            // form validation
+            var entryType = form.find("[data-toggle='dropdown']").first().html();
+            // get the tag containing the entry input
+            if (entryType == "File") {
+                entry = form.find(".custom-file-input");
+            } else {
+                entry = form.find(".form-group:eq(0)").find(".form-control:eq(0)");
+            }
+
+            // validate all relevant fields
+            function validateEntries() {
+                var allPassed = true;
+                function passed(node, valid) {
+                    node.removeClass("is-valid is-invalid");
+                    if (valid) {
+                        node.addClass("is-valid");
+                    } else {
+                        node.addClass("is-invalid");
+                        allPassed = false;
+                    }
+                }
+                // validate entry
+                switch (entryType) {
+                    case "Text":
+                        if (entry.val().length >= 1) {
+                            passed(entry, true);
+                        } else {
+                            passed(entry, false);
+                        }
+                        break;
+                    case "File":
+                        if (entry[0].files.length == 1) {
+                            passed(entry, true);
+                        } else {
+                            passed(entry, false);
+                        }
+                        break;
+                    case "Hash":
+                        if (entry.val().substring(0, 2) == "0x" & entry.val().length == 66) {
+                            passed(entry, true);
+                        } else {
+                            passed(entry, false);
+                        }
+                        break;
+                }
+                return allPassed;
+            }
+            // if at least one invalid entry
+            if (! validateEntries()) {
+                ProveIt.stateChange(form.find("[role='alert']"), "&nbsp;", "default");
+                return;
+            }
+
+            ProveIt.stateChange(form.find("[role='alert']"), "Loading...", "default");
+
+            var hash;
+            switch (entryType) {
+                case "Text":
+                    hash = ProveIt.hashText(entry.val());
+                    parseResult(hash);
+                    break;
+                case "File":
+                    ProveIt.hashFile(entry[0].files[0]).then(hashResolved => {
+                        $("#fileHashModal").one('hide.bs.modal', function() {parseResult(hashResolved);});
+                    }).catch(error => {
+                        console.log(error);
+                        ProveIt.stateChange(form.find("[role='alert']"), "Error.", "warning");
+                        return;
+                    });
+                    break;
+                case "Hash":
+                    hash = entry.val();
+                    parseResult(hash);
+                    break;
+            }
+
+            function parseResult (hash) {
+                // check if metamask acct needs to be unlocked
+                if (typeof ProveIt.web3Status.account == "undefined") {
+                    ProveIt.stateChange(form.find("[role='alert']"), "Please unlock your MetaMask account.", "warning");
+                }
+
+                var data = [];
+                // add function signature
+                data.push(web3.sha3("deleteEntry(bytes32)").substring(0, 10));
+                // add argument (no need to pad, it's already 32 bytes)
+                data.push(hash.substring(2));
+                data = data.join("");
+                web3.eth.sendTransaction({
+                    from: ProveIt.web3Status.account,
+                    to: ProveIt.Prover.address,
+                    value: 0,
+                    gas: 400000,
+                    data: data
+                }, function (error, txHash) {
+                    if (error) {
+                        console.log(error);
+                        ProveIt.stateChange(form.find("[role='alert']"), "Error.", "error");
+                    } else {
+                        var network = {
+                            "Mainnet": "",
+                            "Rinkeby (proof-of-authority)": "rinkeby.",
+                            "Ropsten (test)": "ropsten."}[ProveIt.web3Status.networkName];
+                        var txLink = `<a target="_blank" href="https://${network}etherscan.io/tx/${txHash}" class="nounderline">${txHash}</a>`;
+                        ProveIt.stateChange(form.find("[role='alert']"), `Transaction Hash: ${txLink}`, "info");
+                    }
+                });
             }
         },
 
@@ -463,7 +631,7 @@ ProveIt = (function($) {
             var hashObject = browserifyModules.keccak('keccak256');
 
             var errorCallback = function(error) {
-                throw new Error(`File upload error.`);
+                throw new Error("File upload error.");
             };
             var chunkCallback = function(chunk, percentDone) {
                 hashObject.update(browserifyModules.Buffer.from(chunk));
@@ -476,13 +644,17 @@ ProveIt = (function($) {
             // reset the modal
             $("#progressBar").style = "width: 0%";
             $("#fileHashModalButton")
-                .removeClass("btn-success")
+                .removeClass("btn-success btn-danger")
                 .addClass("btn-danger")
                 .html("Cancel");
 
             return new Promise((resolve, reject) => {
                 // add hashed listener to modal
                 $("#fileHashModal").one("hashed", function (event) {
+                    $("#fileHashModalButton")
+                        .removeClass("btn-success btn-danger")
+                        .addClass("btn-success")
+                        .html("Success");
                     resolve(event.detail);
                 });
                 // add event listener for modal close, which cancels the promise
@@ -502,14 +674,14 @@ ProveIt = (function($) {
         inputToggle: function (event) {
             var selection = $(this).html();
             var inputHTML = {
-                "Entry Hash": `<input type="text" class="form-control" placeholder="0x...">`,
                 Text: `<input type="text" class="form-control" placeholder="Your Message...">`,
-                File: `<label class="custom-file col-lg" id="entryField">
+                File: `<label class="custom-file col-lg cursor-pointer" id="entryField">
                   <input type="file" class="custom-file-input">
                   <span class="custom-file-control rounded-right">Choose File...</span>
-                </label>`
+                </label>`,
+                Hash: `<input type="text" class="form-control" placeholder="0x...">`,
             }[selection];
-            var form = $(event.target).closest("form").attr("id") == "readEntry" ? $("#readEntry") : $("#submitEntry");
+            var form = $(this).closest("form");
             // update the addon text
             form.find("[data-toggle='dropdown']").html(selection);
             // update the html
@@ -523,6 +695,17 @@ ProveIt = (function($) {
         fileUploadListener: function (event) {
             var fileName = $(this).val().split("\\").pop();
             $(this).next('.custom-file-control').html(fileName);
+        },
+
+        initializeClipboard: function() {
+            // initialize clipboard
+            var clipboard = new Clipboard('.copyable', {
+                text: function(trigger) {
+                    return $(trigger).attr("data-clipboard-text");
+                }
+            });
+            clipboard.on('success', ProveIt.clipboardSuccess);
+            clipboard.on('error', ProveIt.clipboardError);
         },
 
         clipboardSuccess: function (event) {
@@ -556,12 +739,12 @@ ProveIt = (function($) {
             if (typeof web3 !== 'undefined') {
                 window.web3 = new Web3(web3.currentProvider);
                 if (!web3.currentProvider.isMetaMask) {
-                    ProveIt.disable(["submit"], "read");
+                    ProveIt.disable(["submit"], "prove");
                 }
             } else {
                 window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/zKmHyEn4VwJ4in3cptiL"));
                 ProveIt.web3Status.defaultedToInfura = true;
-                ProveIt.disable(["submit"], "read");
+                ProveIt.disable(["submit"], "prove");
             }
             ProveIt.web3CheckOnce();
             ProveIt.web3CheckMany();
@@ -611,7 +794,7 @@ ProveIt = (function($) {
                         break;
                 }
                 $("#web3Button")
-                .removeClass(possibleStates)
+                    .removeClass(possibleStates)
                     .addClass(newClass)
                     .attr("title", "Web3 Provider Status")
                     .attr("data-content", tooltipText)
@@ -619,9 +802,9 @@ ProveIt = (function($) {
                     .popover({"html": true});
             }
             if (ProveIt.web3Status.defaultedToInfura) {
-                changeButton("warning", `No Web3 provider detected. This means that your browser is unable to communicate with the Ethereum blockchain, which is how ProveIt operates. ProveIt has fallen back to a read-only state; if you'd like to submit an entry, consider installing <a target='_blank' href='https://metamask.io/' class='nounderline'>MetaMask</a> or using a <a target='_blank' href='https://brave.com' class='nounderline'>ĐApp-friendly browser</a>.`, ProveIt.web3Status.networkName);
+                changeButton("warning", `No Web3 provider detected. This means that your browser can't interact with the Ethereum blockchain, which is how ProveIt operates. ProveIt has fallen back to a read-only state on the mainnet; if you'd like to explore further or submit, please install the secure digital wallet <a target='_blank' href='https://metamask.io/' class='nounderline'>MetaMask</a> or use a <a target='_blank' href='https://brave.com' class='nounderline'>ĐApp-friendly browser</a>.`, ProveIt.web3Status.networkName);
             } else {
-                changeButton("success", `Congratulations, you're connected! You're plugged into the Ethereum <strong>${ProveIt.web3Status.networkName}</strong> network, courtesy of <strong>${ProveIt.web3Status.providerName}</strong>.`, ProveIt.web3Status.networkName);
+                changeButton("success", `Active connection detected! You're plugged into the Ethereum <strong>${ProveIt.web3Status.networkName}</strong> network, courtesy of <strong>${ProveIt.web3Status.providerName}</strong>.`, ProveIt.web3Status.networkName);
             }
         },
 
@@ -653,7 +836,7 @@ ProveIt = (function($) {
                     ProveIt.launchErrorModal(
                         "Web3 Error",
                         `Could not detect network, please ensure that your Web3 provider <strong>${ProveIt.web3Status.providerName}</strong> is functioning correctly.`);
-                    ProveIt.disable(["read", "submit"]);
+                    ProveIt.disable(["prove", "read", "submit"], "about");
                     return;
                 }
                 else {
@@ -685,14 +868,13 @@ ProveIt = (function($) {
                     ProveIt.launchErrorModal(
                         "Unsupported Network",
                         `Your Web3 provider <strong>${ProveIt.web3Status.providerName}</strong> is currently on the <strong>${ProveIt.web3Status.networkName}</strong> network. ProveIt is not supported on this network, please switch to one of: [${ProveIt.web3Status.supportedNetworks.join(", ")}].`);
-                    ProveIt.disable(["read", "submit"]);
+                    ProveIt.disable(["prove", "read", "submit"], "about");
                     return;
                 }
                 // now that we know web3 is initialized and on a proper network...
                 ProveIt.ens = new browserifyModules.ENS(web3);
                 ProveIt.initializeContracts(ProveIt.web3Status.networkName);
                 ProveIt.updateWeb3Tooltip();
-                ProveIt.autoPopulate();
             });
         }
     };
@@ -700,38 +882,22 @@ ProveIt = (function($) {
 
 // DOM-dependent code
 $(function() {
-    ProveIt.DOMReady = true;
-    // clipboard functionality
-    var clipboard = new Clipboard('.copyable', {
-        text: function(trigger) {
-            return $(trigger).attr("data-clipboard-text");
-        }
-    });
-    clipboard.on('success', ProveIt.clipboardSuccess);
-    clipboard.on('error', ProveIt.clipboardError);
+    // initialize the web3 button popover
+    $("#web3Button").popover({"html": true});
 
-    // add event listeners
-    $("#readEntry, #submitEntry").find(".nofocus").on("click", ProveIt.entryInformation);
-    $("#readEntry, #submitEntry").find(".dropdown-menu button").on('click', ProveIt.inputToggle);
-    //$("#userEntriesSubmit").on("click", ProveIt.populateEntries);
+    // add event listeners to relevant buttons
+    $("#ProveItButton").on("click", ProveIt.entryInformation);
+    $("#ProveItEntryToggle").next().find("button").on('click', ProveIt.inputToggle);
 
-    // initialize tooltips
-    $('[data-toggle="tooltip"]').tooltip();
+    $("a[href='#registeredUsersAddresses']").one("click", ProveIt.allUsers);
 
-    if (ProveIt.web3Status.available & !ProveIt.autoPopulated) {
-        ProveIt.autoPopulated = true;
-
-    }
+    $("#submitButton").on("click", ProveIt.submitEntry);
+    $("#submitEntryToggle").next().find("button").on('click', ProveIt.inputToggle);
+    $("#removeEntryToggle").next().find("button").on('click', ProveIt.inputToggle);
+    $("#removeButton").on("click", ProveIt.removeEntry);
 });
 
 // window-dependent code
 $(window).on("load", function () {
-    function DOMReadyWrapper () {
-        if (ProveIt.DOMReady) {
-            ProveIt.initializeWeb3();
-        } else {
-            setTimeout(DOMReadyWrapper, 10);
-        }
-    }
-    DOMReadyWrapper();
+    ProveIt.initializeWeb3();
 });
