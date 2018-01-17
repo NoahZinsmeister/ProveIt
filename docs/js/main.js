@@ -893,6 +893,14 @@ ProveIt = (function($) {
                 ProveIt.initializeContracts(ProveIt.web3Status.networkName);
                 ProveIt.updateWeb3Tooltip();
             });
+        },
+
+        windowReadyWrapper: function () {
+            if (ProveIt.windowReady) {
+                ProveIt.initializeWeb3();
+            } else {
+                setTimeout(ProveIt.windowReadyWrapper, 250);
+            }
         }
     };
 })(jQuery, browserifyModules);
@@ -906,7 +914,7 @@ $(function() {
     $("#ProveItButton").on("click", ProveIt.entryInformation);
     $("#ProveItEntryToggle").next().find("button").on('click', ProveIt.inputToggle);
 
-    $("button[href='#registeredUsersAddresses']").one("click", ProveIt.allUsers);
+    $("#getRegisteredUsers").one("click", ProveIt.allUsers);
     $("#userEntriesSubmit").on("click", ProveIt.populateEntries);
 
     $("#submitButton").on("click", ProveIt.submitEntry);
@@ -918,14 +926,7 @@ $(function() {
     ProveIt.initializeClipboard();
 
     // make sure web3 gets initialized
-    function windowReadyWrapper () {
-        if (ProveIt.windowReady) {
-            ProveIt.initializeWeb3();
-        } else {
-            setTimeout(windowReadyWrapper, 10);
-        }
-    }
-    windowReadyWrapper();
+    ProveIt.windowReadyWrapper();
 });
 
 // window-dependent code
