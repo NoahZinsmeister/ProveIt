@@ -896,7 +896,7 @@ ProveIt = (function($) {
         },
 
         windowReadyWrapper: function () {
-            if (ProveIt.windowReady) {
+            if (ProveIt.windowReady & ProveIt.DOMReady) {
                 ProveIt.initializeWeb3();
             } else {
                 setTimeout(ProveIt.windowReadyWrapper, 250);
@@ -907,6 +907,7 @@ ProveIt = (function($) {
 
 // DOM-dependent code
 $(function() {
+    ProveIt.DOMReady = true;
     // initialize the web3 button popover
     $("#web3Button").popover({"html": true});
 
@@ -932,4 +933,6 @@ $(function() {
 // window-dependent code
 $(window).on("load", function () {
     ProveIt.windowReady = true;
+    // make sure web3 gets initialized
+    ProveIt.windowReadyWrapper();
 });
