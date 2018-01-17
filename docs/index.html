@@ -23,6 +23,7 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
   <script src="https://cdn.rawgit.com/zenorocha/clipboard.js/v1.7.1/dist/clipboard.min.js"></script>
   <script type="text/javascript" src="https://cdn.rawgit.com/ethereum/web3.js/master/dist/web3.min.js"></script>
+  <script defer src="https://use.fontawesome.com/releases/v5.0.1/js/all.js"></script>
   <script type="text/javascript" src="js/bundle.js"></script>
   <script type="text/javascript" src="js/main.js"></script>
 </head>
@@ -98,8 +99,8 @@
       <!-- ProveIt -->
       <div class="tab-content" id="navTabsContent">
         <div class="tab-pane fade show active" id="prove" role="tabpanel">
-          <h4 class="text-center mt-5 mb-3">We don't blame you for being skeptical.</h4>
-          <p class="mb-5 w-75 mx-auto">The form below allows you to check whether <strong>text</strong>, a <strong>file</strong>, or arbitrary <strong>hashed data</strong> have been submitted to ProveIt. It's simple: enter the submitter's address and their claim then click that ProveIt button!</p>
+          <h4 class="text-center mt-5 mb-3">We'd be skeptical too.</h4>
+          <p class="mb-5 w-75 mx-auto">Use the form below to check whether <strong>text</strong>, a <strong>file</strong>, or <strong>hashed data</strong> have been submitted to ProveIt. Just enter the submitter's address and their claim, then click that ProveIt button!</p>
           <form id="proveEntry">
             <div class="form-row">
               <div class="form-group col-md-5">
@@ -108,7 +109,7 @@
                   <input type="text" class="form-control" placeholder="0x...">
                 </div>
                 <small class="form-text text-muted noselect">
-                  The Ethereum address of the submitter (starting with 0x)
+                  The Ethereum address of the submitter
                 </small>
               </div>
               <div class="form-group col-md-7">
@@ -146,41 +147,46 @@
         <!-- Read -->
         <div class="tab-pane fade" id="read" role="tabpanel">
           <h4 class="text-center mt-5 mb-3">Take a deeper dive.</h4>
-          <div class="col mt-5 text-center">
-            <a class="nounderline h5" data-toggle="collapse" href="#registeredUsersAddresses" role="tab">Registered User List <span id="usersBadge" class="badge badge-primary badge-pill"></span></a>
+          <p class="mb-3 w-75 mx-auto">Feeling curious? Click below to see all the users who have a submission in ProveIt.</p>
+          <div class="col text-center">
+            <button type="button" class="btn btn-outline-primary nofocus cursor-pointer" data-toggle="collapse" href="#registeredUsersAddresses" role="tab">Registered User List <span id="usersBadge" class="badge badge-primary badge-pill"></span></button>
           </div>
-          <ul class="list-group scrollable mt-2" id="accordionUsers" role="tablist">
+          <br>
+          <ul class="list-group scrollable" id="accordionUsers" role="tablist">
             <div id="registeredUsersAddresses" class="collapse" role="tabpanel">
               <ul id="masterUserParent" class="list-group">
               </ul>
             </div>
           </ul>
-          <!--
-          <h4 class="text-center mt-5">User Entries</h4>
+
+          <p class="mt-5 w-75 mx-auto">Or maybe you'd like to check out a particular user's submission hashes (enigmatic, aren't they?).</p>
           <form id="entriesForm">
             <div class="form-row">
-              <div class="form-group col-md-11">
+              <div class="form-group col-md-10 col-xl-11">
                 <div class="input-group">
                   <div class="input-group-addon">Address</div>
                   <input type="text" class="form-control" id="userEntriesAddress" placeholder="0x...">
                 </div>
+                <small class="form-text text-muted noselect">
+                  The Ethereum address of the submitter
+                </small>
               </div>
-              <div class="form-group col-md-1">
+              <div class="form-group col-md-2 col-xl-1">
                 <button type="button" class="btn btn-block btn-outline-primary nofocus" id="userEntriesSubmit">Query</button>
               </div>
             </div>
-            <div class="scrollable mb-2">
+            <div class="scrollable">
               <ul class="list-group mt-3" id="userEntries">
               </ul>
             </div>
-          </form>-->
+          </form>
         </div>
 
 
         <!-- Submission -->
         <div class="tab-pane fade" id="submit" role="tabpanel">
           <h4 class="text-center mt-5 mb-3">Got something to prove?</h4>
-          <p class="mb-5 w-75 mx-auto">Use the form below to submit to ProveIt. We recommend starting off with a <strong>text</strong> or <strong>file</strong> submission, as these will be hashed automatically. However, you're also free to compute your own Keccak-256 <strong>hash</strong>. You can also lock up some ETH with your entry to provide credibility. The only way to recover this amount is to destroy the associated submission.</p>
+          <p class="mb-5 w-75 mx-auto">Use the form below to submit to ProveIt. We recommend starting off with a <strong>text</strong> or <strong>file</strong> submission. If you choose to lock up any ether with your entry, you will only be able to recover it by destroying the associated submission.</p>
           <form id="submitEntry">
             <div class="form-row">
               <div class="form-group col-md-8">
@@ -207,7 +213,7 @@
                   <input type="text" class="form-control" placeholder="0">
                 </div>
                 <small class="form-text text-muted noselect">
-                  The amount of ETH you want to lock up with your entry
+                  The amount of ether you want to lock up with your entry
                 </small>
               </div>
             </div>
@@ -224,7 +230,7 @@
           </form>
           <form id="removeEntry">
             <h4 class="text-center mt-5 mb-3">I take it back!</h4>
-            <p class="mb-5 w-75 mx-auto">Want to rescind a submission and reclaim any locked ETH? No problem, use the form below.</p>
+            <p class="mb-5 w-75 mx-auto">Want to rescind a submission and reclaim any locked ether? No problem, use the form below.</p>
             <div class="form-row">
               <div class="form-group col-12">
                 <div class="input-group">
@@ -262,10 +268,52 @@
         <!-- About -->
         <div class="tab-pane fade text-center" id="about" role="tabpanel">
           <h4 class="text-center mt-5 mb-3">Lay claim to your history.</h4>
-          <p class="mb-5 w-75 mx-auto text-left">
-            ProveIt is a decentralized application (ĐApp for short) powered by <a target="_blank" class="nounderline" href="https://www.ethereum.org/">Ethereum</a>. It offers users a simple value proposition: the ability to prove that they said or possessed something, <em>anything</em>, without the need to rely on a trusted intermediary. This is an extraordinary and unprecedented phenomenon with implications for intellectual property rights, credibility in peer-to-peer networks, and much more.<br><br>Using ProveIt is simple: first, decide what <strong>text</strong>, <strong>file</strong>, or arbitrary <strong>data</strong> you want to be able to prove that you possessed. Since ProveIt never stores unencrypted data, we first have to compute a unique identifier for your submission: its Keccak-256 hash. Using Keccak ensures that the content of your submission remains anonymous while still allowing anyone to verify it. If this is confusing, don't worry: any <strong>text</strong> or <strong>file</strong> you submit to ProveIt will automatically be processed with secure, client-side hashing. Of course, you're always welcome to compute and submit your own <strong>hash</strong>. This identifier is then submitted to ProveIt alongside an (optional) amount of ether that you want to lock up to provide credibility. This amount cannot be recovered without destroying the associated submission. Once your submission has been made, it's immutably stored in the blockchain! At any point in the future, you can release the original <strong>text</strong>, <strong>file</strong>, or <strong>data</strong> at your discretion, allowing anyone to verify that you possessed it.<br><br>More information on ProveIt (including hypothetical use cases), and the entirety of the open-source codebase can be found on <a target="_blank" class="nounderline" href="https://github.com/NoahZinsmeister/ProveIt">Github</a>.
+          <p class="w-75 mx-auto text-left">
+            ProveIt is a decentralized application, or ĐApp, powered by <a target="_blank" class="nounderline" href="https://www.ethereum.org/">Ethereum</a>. Its value proposition is simple: users gain the ability to prove that they said or possessed something, <em>anything</em>, without the need to rely on a trusted intermediary. This is an extraordinary and unprecedented phenomenon with implications for intellectual property rights, credibility in peer-to-peer networks, and much more.<br><br>
           </p>
-          <p class="h2 text-center">⟠</p>
+          <h4 class="text-center mt-3 mb-3">Quickstart Guide</h4>
+          <div class="w-75 mx-auto">
+            <div class="row align-items-center pt-2 pb-2 border rounded border-secondary">
+              <div class="col-2 text-center">
+                <i class="fas fa-file-alt h1 my-auto"></i>
+              </div>
+              <div class="col-10 text-left">
+                First, decide what <strong>text</strong> or <strong>file</strong> you want to be able to prove that you possessed.
+              </div>
+            </div>
+            <br>
+            <div class="row align-items-center pt-2 pb-2 border rounded border-secondary">
+              <div class="col-10 text-right">
+                Next, since ProveIt never stores unencrypted data, we have to compute a unique identifier for your submission. ProveIt uses a state-of-the-art hashing algorithm to ensure that the content of your submission remains anonymous while still allowing anyone to verify it. Any text or file you submit to ProveIt will automatically be processed with secure, client-side hashing. Advanced users are invited to compute and submit their own <strong>hashes</strong> (make sure to use Keccak-256!)
+              </div>
+              <div class="col-2">
+                <i class="fas fa-key h1 my-auto"></i>
+              </div>
+            </div>
+            <br>
+            <div class="row align-items-center pt-2 pb-2 border rounded border-secondary">
+              <div class="col-2">
+                <i class="fas fa-exchange-alt h1 my-auto"></i>
+              </div>
+              <div class="col-10 text-left">
+                Finally, your identifier is submitted to ProveIt alongside an optional amount of ether you can lock up to provide credibility (the ether cannot be recovered without destroying the associated submission).
+              </div>
+            </div>
+            <br>
+            <div class="row align-items-center pt-2 pb-2 border rounded border-secondary">
+              <div class="col-10 text-right">
+                Congratulations, your submission is now immutably stored in the blockchain! At your discretion you can release the original <strong>text</strong> or <strong>file</strong>, allowing anyone to verify that you possessed it.
+              </div>
+              <div class="col-2">
+                <i class="fas fa-link h1 my-auto"></i>
+              </div>
+            </div>
+          </div>
+          <br><br>
+          <p class="w-75 mx-auto text-left">
+            More information on ProveIt (including hypothetical use cases), and the entirety of the open-source codebase can be found on <a target="_blank" class="nounderline" href="https://github.com/NoahZinsmeister/ProveIt">Github</a>.
+          </p>
+          <p class="h2 mt-3 text-center">⟠</p>
         </div>
       </div>
     </div>

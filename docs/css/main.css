@@ -53,7 +53,7 @@
 
 /* scrollable divs */
 .scrollable {
-    max-height: 300px;
+    max-height: 500px;
     overflow-x: hidden;
     overflow-y: auto;
 }

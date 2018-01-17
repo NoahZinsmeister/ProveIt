@@ -67,9 +67,9 @@ ProveIt = (function($) {
             tabNames.map(x => {
                 $(`#${x}-tab`).addClass("disabled").removeAttr("href");
             });
-            var proveMessage = "prove" in messages ? messages.prove : "Your Web3 provider, the service that lets your browser connect to the Ethereum blockchain, seems to be malfunctioning. Please refresh the page and try again.";
-            var readMessage = "read" in messages ? messages.read : "Your Web3 provider, the service that lets your browser connect to the Ethereum blockchain, seems to be malfunctioning. Please refresh the page and try again.";
-            var submitMessage = "submit" in messages ? messages.submit : "To submit an entry to ProveIt, you'll need to be able to send a transaction to the Ethereum blockchain. To get started, download the secure digital wallet <a target='_blank' href='https://metamask.io/' class='nounderline'>MetaMask</a>, and load it up with enough Ether to cover a transaction or two (~$20 should do the trick).";
+            var proveMessage = "prove" in messages ? messages.prove : "Your Web3 provider, the service that lets your browser interact with the Ethereum blockchain, seems to be malfunctioning. Please refresh the page and try again.";
+            var readMessage = "read" in messages ? messages.read : "Your Web3 provider, the service that lets your browser interact with the Ethereum blockchain, seems to be malfunctioning. Please refresh the page and try again.";
+            var submitMessage = "submit" in messages ? messages.submit : "To submit an entry to ProveIt, you'll need to interact with the Ethereum blockchain. To get started, install the secure digital wallet <a target='_blank' href='https://metamask.io/' class='nounderline'>MetaMask</a> and make sure you have enough rther to cover fees for a transaction or two.";
             // add tooltips explaining why disabled
             if (tabNames.includes("submit")) {
                 $("#submit-tab")
@@ -77,7 +77,7 @@ ProveIt = (function($) {
                     .attr("data-placement", "auto")
                     .attr("data-trigger", "click")
                     .addClass("cursor-pointer")
-                    .attr("title", "Submitting Disabled")
+                    .attr("title", "Submissions Disabled")
                     .attr("data-content", submitMessage)
                     .popover({"html": true});
             }
@@ -185,21 +185,38 @@ ProveIt = (function($) {
                 }
             });
         },
-        /*
+
         populateEntries: function (event) {
             // variable identification
-            var address, amount,
-            var address = $("#userEntriesAddress").val();
+            var form = $("#entriesForm");
+            var address = form.find(".form-group:eq(0)").find(".form-control:eq(0)");
 
-            if (! web3.isAddress(address)) {
-                event.preventDefault();
-                event.stopPropagation();
-                $("#userEntriesAddress").addClass('is-invalid');
-                $("#userEntries").html("");
-                return;
-            } else {
-                $("#userEntriesAddress").removeClass("is-invalid").addClass('is-valid');
+            // validate all relevant fields
+            function validateEntries() {
+                var allPassed = true;
+                function passed(node, valid) {
+                    node.removeClass("is-valid is-invalid");
+                    if (valid) {
+                        node.addClass("is-valid");
+                    } else {
+                        node.addClass("is-invalid");
+                        allPassed = false;
+                    }
+                }
+                // validate address
+                if (web3.isAddress(address.val())) {
+                    passed(address, true);
+                } else {
+                    passed(address, false);
+                }
+                return allPassed;
             }
+            // if at least one invalid entry
+            if (! validateEntries()) {
+                return;
+            }
+
+            $("#userEntries").html("");
 
             function entryList (entry) {
                 var out =`
@@ -221,10 +238,10 @@ ProveIt = (function($) {
                 return out;
             }
 
-            ProveIt.Prover.userEntries.call(address, function (error, entries) {
+            ProveIt.Prover.userEntries.call(address.val(), function (error, entries) {
                 if (error) {
-                    $("#userEntries").html(noEntries("Error."));
                     console.log(error);
+                    $("#userEntries").html(errorEntries("Error."));
                     return;
                 } else {
                     if (entries.length >= 1) {
@@ -233,14 +250,14 @@ ProveIt = (function($) {
                             out.push(entryList(entries[i]));
                         }
                         $("#userEntries").html(out.join(""));
-                        initializeCopyables($("#userEntries"));
+                        ProveIt.initializeCopyables($("#userEntries"));
                     } else {
                         $("#userEntries").html(errorEntries("No entries found."));
                     }
                 }
             });
         },
-        */
+
         stateChange: function (alert, text, state) {
             var classes;
             switch (state) {
@@ -802,7 +819,7 @@ ProveIt = (function($) {
                     .popover({"html": true});
             }
             if (ProveIt.web3Status.defaultedToInfura) {
-                changeButton("warning", `No Web3 provider detected. This means that your browser can't interact with the Ethereum blockchain, which is how ProveIt operates. ProveIt has fallen back to a read-only state on the mainnet; if you'd like to explore further or submit, please install the secure digital wallet <a target='_blank' href='https://metamask.io/' class='nounderline'>MetaMask</a> or use a <a target='_blank' href='https://brave.com' class='nounderline'>ĐApp-friendly browser</a>.`, ProveIt.web3Status.networkName);
+                changeButton("warning", `We couldn't detect a Web3 provider, which means that your browser can't interact with the Ethereum blockchain. ProveIt has fallen back to a read-only state on the mainnet. If you'd like to make a submission, please install the secure digital wallet <a target='_blank' href='https://metamask.io/' class='nounderline'>MetaMask</a>.`, ProveIt.web3Status.networkName);
             } else {
                 changeButton("success", `Active connection detected! You're plugged into the Ethereum <strong>${ProveIt.web3Status.networkName}</strong> network, courtesy of <strong>${ProveIt.web3Status.providerName}</strong>.`, ProveIt.web3Status.networkName);
             }
@@ -889,15 +906,29 @@ $(function() {
     $("#ProveItButton").on("click", ProveIt.entryInformation);
     $("#ProveItEntryToggle").next().find("button").on('click', ProveIt.inputToggle);
 
-    $("a[href='#registeredUsersAddresses']").one("click", ProveIt.allUsers);
+    $("button[href='#registeredUsersAddresses']").one("click", ProveIt.allUsers);
+    $("#userEntriesSubmit").on("click", ProveIt.populateEntries);
 
     $("#submitButton").on("click", ProveIt.submitEntry);
     $("#submitEntryToggle").next().find("button").on('click', ProveIt.inputToggle);
     $("#removeEntryToggle").next().find("button").on('click', ProveIt.inputToggle);
     $("#removeButton").on("click", ProveIt.removeEntry);
+
+    // intialize clipboard
+    ProveIt.initializeClipboard();
+
+    // make sure web3 gets initialized
+    function windowReadyWrapper () {
+        if (ProveIt.windowReady) {
+            ProveIt.initializeWeb3();
+        } else {
+            setTimeout(windowReadyWrapper, 10);
+        }
+    }
+    windowReadyWrapper();
 });
 
 // window-dependent code
 $(window).on("load", function () {
-    ProveIt.initializeWeb3();
+    ProveIt.windowReady = true;
 });
