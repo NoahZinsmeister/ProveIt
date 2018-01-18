@@ -69,7 +69,7 @@ ProveIt = (function($) {
             });
             var proveMessage = "prove" in messages ? messages.prove : "Your Web3 provider, the service that lets your browser interact with the Ethereum blockchain, seems to be malfunctioning. Please refresh the page and try again.";
             var readMessage = "read" in messages ? messages.read : "Your Web3 provider, the service that lets your browser interact with the Ethereum blockchain, seems to be malfunctioning. Please refresh the page and try again.";
-            var submitMessage = "submit" in messages ? messages.submit : "To submit an entry to ProveIt, you'll need to interact with the Ethereum blockchain. To get started, install the secure digital wallet <a target='_blank' href='https://metamask.io/' class='nounderline'>MetaMask</a> and make sure you have enough rther to cover fees for a transaction or two.";
+            var submitMessage = "submit" in messages ? messages.submit : "To submit an entry to ProveIt, you'll need to interact with the Ethereum blockchain. To get started, install the secure digital wallet <a target='_blank' href='https://metamask.io/' class='nounderline'>MetaMask</a> and make sure you have enough ether to cover fees for a transaction or two.";
             // add tooltips explaining why disabled
             if (tabNames.includes("submit")) {
                 $("#submit-tab")
