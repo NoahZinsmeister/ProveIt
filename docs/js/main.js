@@ -810,10 +810,10 @@ ProveIt = (function($) {
                         newClass = "btn-outline-danger";
                         break;
                 }
+                ProveIt.changeTooltipTitle($("#web3Button").get(), "Web3 Provider Status");
                 $("#web3Button")
                     .removeClass(possibleStates)
                     .addClass(newClass)
-                    .attr("title", "Web3 Provider Status")
                     .attr("data-content", tooltipText)
                     .html(innerText)
                     .popover({"html": true});
