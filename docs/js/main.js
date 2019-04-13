@@ -760,7 +760,7 @@ ProveIt = (function($) {
                 }
             } else {
                 window.web3 = new Web3(
-                    new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/' + secrets.config.infuraKey)
+                    new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/b3226ed665c64d51abd751a77463c78c')
                 );
                 ProveIt.web3Status.defaultedToInfura = true;
                 ProveIt.disable(["submit"], "prove");
