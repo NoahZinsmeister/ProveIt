@@ -759,7 +759,9 @@ ProveIt = (function($) {
                     ProveIt.disable(["submit"], "prove");
                 }
             } else {
-                window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/zKmHyEn4VwJ4in3cptiL"));
+                window.web3 = new Web3(
+                    new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/' + secrets.config.infuraKey)
+                );
                 ProveIt.web3Status.defaultedToInfura = true;
                 ProveIt.disable(["submit"], "prove");
             }

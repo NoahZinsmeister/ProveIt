@@ -3,7 +3,7 @@ var Web3 = require('web3');
 var tx = require('ethereumjs-tx');
 
 var web3 = new Web3(
-    new Web3.providers.HttpProvider('https://mainnet.infura.io/' + secrets.config.infuraKey)
+    new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/' + secrets.config.infuraKey)
 );
 
 // sending address info

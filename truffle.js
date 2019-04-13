@@ -12,9 +12,9 @@ var wallet = ethereumjsWallet.fromPrivateKey(new Buffer(privateKey, "hex"));
 
 // mainnet
 var providerURL = {
-    Main: "https://mainnet.infura.io/" + secrets.config.infuraKey,
-    Ropsten: "https://ropsten.infura.io/" + secrets.config.infuraKey,
-    Rinkeby: "https://rinkeby.infura.io/" + secrets.config.infuraKey
+    Main: "https://mainnet.infura.io/v3" + secrets.config.infuraKey,
+    Ropsten: "https://ropsten.infura.io/v3" + secrets.config.infuraKey,
+    Rinkeby: "https://rinkeby.infura.io/v3" + secrets.config.infuraKey
 };
 var engines = {
     Main: new ProviderEngine(),
